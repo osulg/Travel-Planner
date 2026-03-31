@@ -12,7 +12,7 @@ function HomePage() {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(true)
-  
+
   const [activeTab, setActiveTabl] = useState('create')
 
   const handleStart = () => {

@@ -1,7 +1,10 @@
-function PrimaryButton({ text }) {
+function PrimaryButton({ text, onClick, type = 'button' }) {
   return (
-    // 실제 버튼
-    <button className="primary-button">
+    <button
+      className="primary-button"
+      type={type}
+      onClick={onClick}
+    >
       {text}
     </button>
   )

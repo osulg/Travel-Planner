@@ -1,9 +1,59 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import InputField from './InputField'
 import PrimaryButton from './PrimaryButton'
 import InlineDatePlanner from './InlineDatePlanner'
 
 // 새 여행 방 만들기 폼 컴포넌트
 function CreateRoomForm() {
+    const navigate = useNavigate()
+    const roomId = crypto.randomUUID()
+
+    const [roomName, setRoomName] = useState('')
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
+
+    const handleDateChange = (update) => {
+        const [start, end] = update
+        setStartDate(start)
+        setEndDate(end)
+    }
+
+    const formatDateToString = (date) => {
+        if (!date)
+            return null
+
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart
+            (2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+
+        return `${year}-${month}-${day}`
+    }
+
+    const handleCreateRoom = () => {
+        if (roomName.trim() === '') {
+            alert('여행 이름을 입력해주세요')
+            return
+        }
+
+        if (!startDate || !endDate) {
+            alert('여행 기간을 선택해주세요')
+            return
+        }
+
+        const roomData = {
+            roomName,
+            startDate: formatDateToString(startDate),
+            endDate: formatDateToString(endDate),
+        }
+
+
+        console.log('생성할 방 데이터:', roomData)
+
+        navigate(`/trip/${roomId}`, { state: roomData, })
+    }
+
     return (
         <section className="create-room-form">
             <h2 className="create-room-title">새 여행 방 만들기</h2>
@@ -14,11 +64,21 @@ function CreateRoomForm() {
             <InputField
                 label="여행 이름"
                 placeholder="제주도 힐링 여행"
+                value={roomName}
+                onChange={(event) => setRoomName(event.target.value)}
+                name="roomName"
             />
 
-            <InlineDatePlanner />
+            <InlineDatePlanner
+                startDate={startDate}
+                endDate={endDate}
+                onDateChange={handleDateChange}
+            />
 
-            <PrimaryButton text="방 만들기" />
+            <PrimaryButton
+                text="방 만들기"
+                onClick={handleCreateRoom}
+            />
         </section>
     )
 }

@@ -2,7 +2,7 @@
 // 여러 입력칸에서 재사용 가능
 
 // 공통 입력창 컴포넌트
-function InputField({ label, placeholder, type = 'text' }) {
+function InputField({ label, placeholder, type = 'text', value, onChange, name, }) {
     return (
         <div className="input-group">
             {/* 입력칸 제목 */}
@@ -13,6 +13,9 @@ function InputField({ label, placeholder, type = 'text' }) {
                 className="input-field"
                 type={type}
                 placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                name={name}
             />
         </div>
     )
