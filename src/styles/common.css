@@ -1,0 +1,31 @@
+/* 전체 페이지 기본 설정 */
+body {
+  background-color: #F0F3FE;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
+
+/* 앱 전체 화면을 감싸는 메인 컨테이너 */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 28px 40px;
+}
+
+/* section 공통 간격 */
+section {
+  margin-top: 20px;
+}
+
+/* 기본 제목 스타일 */
+h1,
+h2,
+h3 {
+  font-weight: 700;
+}
+
+/* 기본 설명 문구 */
+p {
+  color: #666;
+  font-size: 14px;
+}
