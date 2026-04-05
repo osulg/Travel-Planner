@@ -20,8 +20,8 @@
 }
 
 .room-title {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     margin-bottom: 4px;
 }
 
@@ -32,18 +32,21 @@
 
 .room-tab-menu {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    /* tabl이 3개여서 */
+    gap: 8px;
     margin: 24px 32px 20px;
     background-color: #ececef;
-    padding: 6px;
-    border-radius: 16px;
+    padding: 4px;
+    border-radius: 999px;
+    height: 50px;
+    align-items: center;
 }
 
 .room-tab {
     height: 40px;
     border: none;
-    border-radius: 12px;
+    border-radius: 999px;
     background: transparent;
     font-size: 15px;
     cursor: pointer;
@@ -83,4 +86,199 @@
     color: #888;
     font-size: 18px;
     margin-top: 120px;
+}
+
+/* 일정 플래너 탭 */
+.planner-layout {
+    display: grid;
+    grid-template-columns: 1.7fr 1.3fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.planner-left {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.planner-section-header {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+}
+
+.planner-board {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.planner-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.planner-grid {
+    min-height: 500px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+}
+
+.planner-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 24px;
+}
+
+.planner-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 32px;
+}
+
+.planner-sidebar-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.add-place-button {
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 10px;
+    background-color: black;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.place-card-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.place-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 20px;
+    padding: 18px;
+}
+
+.place-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.place-card-title {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.place-card-description,
+.place-card-price,
+.place-card-author {
+    color: #666;
+    margin-top: 8px;
+}
+
+.place-card-link {
+    display: inline-block;
+    margin-top: 6px;
+    color: #4a57ff;
+    word-break: break-all;
+}
+
+.place-card-reaction-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.place-card-reaction-row button {
+    height: 44px;
+    border: 1px solid #e5e5e5;
+    border-radius: 24px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.place-card-reaction-row button:hover {
+    background-color: #f7f7f7;
+}
+
+.place-card-badge {
+    margin-top: 14px;
+    height: 44px;
+    border: 1px solid #e5e5e5;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.place-card-category {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background-color: #eef3ff;
+    color: #4a57ff;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.must-badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background-color: #fff1f1;
+    color: #e14b4b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.place-card-link-label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+@media (max-width: 1100px) {
+    .planner-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .planner-sidebar {
+        position: static;
+        top: auto;
+    }
+
+    .place-card-list {
+        grid-template-columns: 1fr;
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
+    }
 }

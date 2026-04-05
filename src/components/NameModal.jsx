@@ -35,7 +35,7 @@ function NameModal({ name, setName, password, setPassword, onStart }) {
                 {/* 비밀번호 입력창 */}
                 <input
                     className="name-modal-input"
-                    type="text"
+                    type="password"
                     placeholder="비밀번호를 입력하세요"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}

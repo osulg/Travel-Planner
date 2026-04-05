@@ -1,0 +1,134 @@
+.vote-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.28);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    padding: 24px;
+}
+
+.vote-modal {
+    width: 100%;
+    max-width: 560px;
+    /* 760 → 560 */
+    max-height: 80vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
+}
+
+.vote-modal-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.vote-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.vote-label {
+    font-size: 18px;
+}
+
+.vote-input,
+.vote-select {
+    height: 52px;
+    font-size: 16px;
+    padding: 0 16px;
+    border-radius: 12px;
+}
+
+.vote-input:focus,
+.vote-select:focus {
+    border-color: #111;
+}
+
+.vote-select-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.add-option-button {
+    height: 52px;
+    font-size: 16px;
+    border-radius: 12px;
+}
+
+.add-option-button:hover {
+    background: #f7f7f7;
+}
+
+.vote-submit-button {
+    height: 52px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #000;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.vote-submit-button:hover {
+    opacity: 0.92;
+}
+
+.vote-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.vote-close-button {
+    border: none;
+    background: transparent;
+    font-size: 32px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 4px 8px;
+    transition: 0.2s ease;
+}
+
+.vote-close-button:hover {
+    color: #111;
+}
+
+.vote-option-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.vote-option-row .vote-select {
+    flex: 1;
+}
+
+.delete-option-button {
+    height: 52px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 12px;
+    background: #f3f3f3;
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
+}
+
+.delete-option-button:hover {
+    background: #e6e6e6;
+}

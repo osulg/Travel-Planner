@@ -1,14 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import InputField from './InputField'
 import PrimaryButton from './PrimaryButton'
 import InlineDatePlanner from './InlineDatePlanner'
 
 // 새 여행 방 만들기 폼 컴포넌트
-function CreateRoomForm() {
-    const navigate = useNavigate()
-    const roomId = crypto.randomUUID()
-
+function CreateRoomForm({ onCreateRoom }) {
     const [roomName, setRoomName] = useState('')
     const [startDate, setStartDate] = useState(null)
     const [endDate, setEndDate] = useState(null)
@@ -20,12 +16,10 @@ function CreateRoomForm() {
     }
 
     const formatDateToString = (date) => {
-        if (!date)
-            return null
+        if (!date) return null
 
         const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart
-            (2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')
 
         return `${year}-${month}-${day}`
@@ -42,16 +36,31 @@ function CreateRoomForm() {
             return
         }
 
-        const roomData = {
+        const newRoom = {
+            id: crypto.randomUUID(),
             roomName,
+            tripName: roomName,
             startDate: formatDateToString(startDate),
             endDate: formatDateToString(endDate),
+            createdAt: new Date().toLocaleString('ko-KR'),
+            inviteLink: `${window.location.origin}/trip/${crypto.randomUUID()}`,
+            places: [],
+            votes: [],
+            members: [
+                {
+                    id: 1,
+                    name: localStorage.getItem('userName') || '홍길동',
+                    joinedAt: new Date().toISOString(),
+                    isHost: true,
+                },
+            ],
         }
 
+        onCreateRoom(newRoom)
 
-        console.log('생성할 방 데이터:', roomData)
-
-        navigate(`/trip/${roomId}`, { state: roomData, })
+        setRoomName('')
+        setStartDate(null)
+        setEndDate(null)
     }
 
     return (
