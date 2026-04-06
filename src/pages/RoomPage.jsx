@@ -14,17 +14,19 @@ function RoomPage() {
     const [roomData, setRoomData] = useState(null)
     const [places, setPlaces] = useState([])
     const [votes, setVotes] = useState([])
+    const [scheduledItems, setScheduledItems] = useState([])
 
     useEffect(() => {
         setIsLoading(true)
 
         const savedRooms = JSON.parse(localStorage.getItem('rooms')) || []
-        const foundRoom = savedRooms.find((room) => room.id === roomId)
+        const foundRoom = savedRooms.find((room) => String(room.id) === String(roomId))
 
         if (foundRoom) {
             setRoomData(foundRoom)
             setPlaces(foundRoom.places || [])
             setVotes(foundRoom.votes || [])
+            setScheduledItems(foundRoom.scheduledItems || [])
         }
 
         setIsLoading(false)
@@ -35,23 +37,32 @@ function RoomPage() {
 
         const savedRooms = JSON.parse(localStorage.getItem('rooms')) || []
         const updatedRooms = savedRooms.map((room) =>
-            room.id === roomId
+            String(room.id) === String(roomId)
                 ? {
                     ...room,
                     ...roomData,
                     places,
                     votes,
+                    scheduledItems,
                 }
                 : room
         )
 
         localStorage.setItem('rooms', JSON.stringify(updatedRooms))
-    }, [roomId, roomData, places, votes])
+    }, [roomId, roomData, places, votes, scheduledItems])
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'planner':
-                return <PlannerTab places={places} setPlaces={setPlaces} />
+                return (
+                    <PlannerTab
+                        places={places}
+                        setPlaces={setPlaces}
+                        scheduledItems={scheduledItems}
+                        setScheduledItems={setScheduledItems}
+                        roomData={roomData}
+                    />
+                )
 
             case 'votes':
                 return (
@@ -91,7 +102,7 @@ function RoomPage() {
                 </button>
 
                 <div className="room-header-text">
-                    <h1 className="room-title">{roomData.roomName}</h1>
+                    <h1 className="room-title">{roomData.name}</h1>
                     <p className="room-date">
                         {roomData.startDate} - {roomData.endDate}
                     </p>

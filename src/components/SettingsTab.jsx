@@ -1,33 +1,26 @@
-import { useState } from "react";
 import "../styles/settings-tab.css";
 
-export default function SettingsTab({ roomData, setRoomData }) {
-    const handleCopyCode = async () => {
-        await navigator.clipboard.writeText(roomData.inviteCode);
-        alert("초대 코드가 복사되었습니다.");
-    };
-
+export default function SettingsTab({ roomData }) {
     const handleCopyLink = async () => {
         await navigator.clipboard.writeText(roomData.inviteLink);
         alert("초대 링크가 복사되었습니다.");
     };
 
     const formatJoinedAt = (joinedAt) => {
-        if (!joinedAt) return "-"
+        if (!joinedAt) return "-";
 
-        const date = new Date(joinedAt)
+        const date = new Date(joinedAt);
 
         if (Number.isNaN(date.getTime())) {
-            return joinedAt
+            return joinedAt;
         }
 
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
-        const day = date.getDate()
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
 
-        return `${year}. ${month}. ${day}. 참여`
+        return `${year}. ${month}. ${day}. 참여`;
     };
-
 
     return (
         <div className="settings-page">
@@ -49,7 +42,9 @@ export default function SettingsTab({ roomData, setRoomData }) {
                                 <strong>{member.name}</strong>
                                 <p>{formatJoinedAt(member.joinedAt)}</p>
                             </div>
-                            {member.isHost && <span className="host-badge">호스트</span>}
+                            {member.role === "host" && (
+                                <span className="host-badge">호스트</span>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -66,8 +61,6 @@ export default function SettingsTab({ roomData, setRoomData }) {
                 </button>
             </div>
 
-
-
             <div className="settings-card">
                 <div className="card-header">
                     <h3>방 정보</h3>
@@ -76,22 +69,25 @@ export default function SettingsTab({ roomData, setRoomData }) {
                 <div className="info-grid">
                     <div className="info-row">
                         <span>여행 이름</span>
-                        <strong>{roomData.tripName}</strong>
+                        <strong>{roomData.name}</strong>
                     </div>
+
                     <div className="info-row">
                         <span>여행 기간</span>
                         <strong>
                             {roomData.startDate} - {roomData.endDate}
                         </strong>
                     </div>
+
                     <div className="info-row">
                         <span>생성일</span>
                         <strong>{roomData.createdAt}</strong>
                     </div>
-                    <div className="info-row">
+
+                    {/* <div className="info-row">
                         <span>최대 인원</span>
                         <strong>{roomData.maxMembers}명</strong>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

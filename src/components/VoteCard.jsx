@@ -8,13 +8,15 @@ function VoteCard({ vote, onVote, onDelete, onClose }) {
         return Math.round((count / totalVotes) * 100);
     };
 
+    const isClosed = vote.status === "closed";
+
     return (
         <article className="vote-card">
             <div className="vote-card-top">
                 <div>
                     <h3 className="vote-title">{vote.title}</h3>
                     <p className="vote-meta">
-                        {vote.author} · {vote.createdAt}
+                        {vote.authorName} · {vote.createdAt}
                     </p>
                     {vote.deadline && (
                         <p className="vote-deadline">
@@ -24,11 +26,11 @@ function VoteCard({ vote, onVote, onDelete, onClose }) {
                 </div>
 
                 <div className="vote-actions">
-                    <span className={`vote-status ${vote.isClosed ? "closed" : "open"}`}>
-                        {vote.isClosed ? "종료됨" : "진행중"}
+                    <span className={`vote-status ${isClosed ? "closed" : "open"}`}>
+                        {isClosed ? "종료됨" : "진행중"}
                     </span>
 
-                    {!vote.isClosed && (
+                    {!isClosed && (
                         <button onClick={() => onClose(vote.id)}>마감</button>
                     )}
 
@@ -47,7 +49,7 @@ function VoteCard({ vote, onVote, onDelete, onClose }) {
                                 <button
                                     className={`vote-option-button ${isSelected ? "selected" : ""}`}
                                     onClick={() => onVote(vote.id, option.id)}
-                                    disabled={vote.isClosed}
+                                    disabled={isClosed}
                                 >
                                     {option.text}
                                 </button>

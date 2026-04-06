@@ -38,8 +38,7 @@ function CreateRoomForm({ onCreateRoom }) {
 
         const newRoom = {
             id: crypto.randomUUID(),
-            roomName,
-            tripName: roomName,
+            name: roomName,
             startDate: formatDateToString(startDate),
             endDate: formatDateToString(endDate),
             createdAt: new Date().toLocaleString('ko-KR'),
@@ -51,7 +50,7 @@ function CreateRoomForm({ onCreateRoom }) {
                     id: 1,
                     name: localStorage.getItem('userName') || '홍길동',
                     joinedAt: new Date().toISOString(),
-                    isHost: true,
+                    role: 'host',
                 },
             ],
         }

@@ -122,14 +122,9 @@
 }
 
 .planner-grid {
-    min-height: 500px;
-    border: 1px solid #e5e5e5;
-    border-radius: 12px;
-    background-color: #fafafa;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .planner-sidebar {
@@ -281,4 +276,125 @@
         overflow-y: visible;
         padding-right: 0;
     }
+}
+
+.planner-grid-column-layout {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fafafa;
+    min-height: 500px;
+}
+
+.planner-time-column {
+    background: #fcfcfd;
+    border-right: 1px solid #e5e5e5;
+}
+
+.planner-top-empty {
+    height: 56px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f3f4f8;
+}
+
+.planner-time-label-cell {
+    height: 64px;
+    border-bottom: 1px solid #ececec;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10px;
+    font-size: 12px;
+    color: #777;
+}
+
+.planner-days-columns {
+    display: grid;
+    overflow-x: auto;
+    background: white;
+}
+
+.planner-day-column {
+    min-width: 180px;
+    border-right: 1px solid #e5e5e5;
+    background: white;
+}
+
+.planner-day-column:last-child {
+    border-right: none;
+}
+
+.planner-day-column-header {
+    height: 56px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f3f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+}
+
+.planner-day-column-body {
+    position: relative;
+}
+
+.planner-day-column-body .planner-hour-cell {
+    height: 64px;
+    border-bottom: 1px solid #ececec;
+    background: white;
+}
+
+.schedule-block {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    border-radius: 12px;
+    padding: 8px 34px 8px 10px;
+    background: #111;
+    color: white;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.schedule-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.schedule-delete-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.schedule-block strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+}
+
+.schedule-block span {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
 }

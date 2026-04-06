@@ -5,7 +5,7 @@ function MyTripBox({ trip, onClick }) {
             onClick={() => onClick(trip)}
             style={{ cursor: 'pointer' }}
         >
-            <h3 className="my-trip-title">{trip.roomName}</h3>
+            <h3 className="my-trip-title">{trip.name}</h3>
             <p className="my-trip-description">
                 {trip.startDate} ~ {trip.endDate}
             </p>

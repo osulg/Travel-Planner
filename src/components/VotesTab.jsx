@@ -26,7 +26,7 @@ function VotesTab({ places, votes, setVotes }) {
     const handleCloseVote = (voteId) => {
         setVotes((prev) =>
             prev.map((vote) =>
-                vote.id === voteId ? { ...vote, isClosed: true } : vote
+                vote.id === voteId ? { ...vote, status: "closed" } : vote
             )
         );
     };
@@ -34,11 +34,10 @@ function VotesTab({ places, votes, setVotes }) {
     const handleVoteOption = (voteId, optionId) => {
         setVotes((prev) =>
             prev.map((vote) => {
-                if (vote.id !== voteId || vote.isClosed) return vote;
+                if (vote.id !== voteId || vote.status === "closed") return vote;
 
                 const previousOptionId = vote.userVote;
 
-                // 1) 같은 버튼 다시 누름 = 선택 해제
                 if (previousOptionId === optionId) {
                     return {
                         ...vote,
@@ -51,16 +50,19 @@ function VotesTab({ places, votes, setVotes }) {
                     };
                 }
 
-                // 2) 다른 버튼으로 변경 또는 처음 선택
                 const updatedOptions = vote.options.map((option) => {
-                    // 이전 선택이 있으면 1 감소
                     if (previousOptionId && option.id === previousOptionId) {
-                        return { ...option, votes: Math.max(0, option.votes - 1) };
+                        return {
+                            ...option,
+                            votes: Math.max(0, option.votes - 1),
+                        };
                     }
 
-                    // 새로 누른 선택지는 1 증가
                     if (option.id === optionId) {
-                        return { ...option, votes: option.votes + 1 };
+                        return {
+                            ...option,
+                            votes: option.votes + 1,
+                        };
                     }
 
                     return option;
@@ -75,14 +77,13 @@ function VotesTab({ places, votes, setVotes }) {
         );
     };
 
-    /* 마감시간 고려 */
     useEffect(() => {
         const interval = setInterval(() => {
             const now = new Date();
 
             setVotes((prev) =>
                 prev.map((vote) => {
-                    if (vote.isClosed) return vote;
+                    if (vote.status === "closed") return vote;
                     if (!vote.deadline) return vote;
 
                     const deadlineDate = new Date(vote.deadline);
@@ -90,7 +91,7 @@ function VotesTab({ places, votes, setVotes }) {
                     if (now >= deadlineDate) {
                         return {
                             ...vote,
-                            isClosed: true,
+                            status: "closed",
                         };
                     }
 

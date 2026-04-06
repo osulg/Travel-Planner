@@ -25,11 +25,8 @@ function VoteModal({ onClose, onCreate, places }) {
     };
 
     const handleDeleteOption = (id) => {
-        setOptions((prev) =>
-            prev.filter((option) => option.id !== id)
-        );
+        setOptions((prev) => prev.filter((option) => option.id !== id));
     };
-
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -55,21 +52,23 @@ function VoteModal({ onClose, onCreate, places }) {
         }
 
         const selectedPlaces = selectedPlaceIds
-            .map((placeId) => places.find((place) => String(place.id) === String(placeId)))
+            .map((placeId) =>
+                places.find((place) => String(place.id) === String(placeId))
+            )
             .filter(Boolean);
 
         const newVote = {
             id: Date.now(),
             title,
-            author: localStorage.getItem("userName") || "홍길동",
+            authorName: localStorage.getItem("userName") || "홍길동",
             createdAt: new Date().toLocaleDateString("ko-KR"),
             deadline,
-            isClosed: false,
+            status: "open",
             userVote: null,
             options: selectedPlaces.map((place) => ({
                 id: place.id,
-                text: place.name,
-                link: place.link,
+                text: place.title,
+                link: place.sourceUrl,
                 votes: 0,
             })),
         };
@@ -117,7 +116,7 @@ function VoteModal({ onClose, onCreate, places }) {
                                     <option value="">{`선택지 ${index + 1}`}</option>
                                     {places.map((place) => (
                                         <option key={place.id} value={place.id}>
-                                            {place.name}
+                                            {place.title}
                                         </option>
                                     ))}
                                 </select>

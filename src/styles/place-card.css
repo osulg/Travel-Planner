@@ -144,3 +144,28 @@
 .edit-btn:hover {
     background: #f7f7f7;
 }
+
+.place-card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.mini-action-btn {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #dcdcdc;
+    border-radius: 999px;
+    background: white;
+    color: #333;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.mini-action-btn:hover {
+    background: #f7f7f7;
+}

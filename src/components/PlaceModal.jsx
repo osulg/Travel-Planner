@@ -3,30 +3,30 @@ import "../styles/place-modal.css";
 
 function PlaceModal({ initialData, onClose, onSave }) {
     const [form, setForm] = useState({
-        name: initialData?.name || "",
+        title: initialData?.title || "",
         category: initialData?.category || "",
-        link: initialData?.link || "",
+        sourceUrl: initialData?.sourceUrl || "",
         memo: initialData?.memo || "",
-        budget: initialData?.budget || "",
+        estimatedCost: initialData?.estimatedCost || "",
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({
             ...prev,
-            [name]: name === "budget" ? Number(value) : value,
+            [name]: name === "estimatedCost" ? Number(value) : value,
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!form.name.trim()) {
+        if (!form.title.trim()) {
             alert("장소명을 입력해주세요");
             return;
         }
 
-        if (!form.link.trim()) {
+        if (!form.sourceUrl.trim()) {
             alert("링크를 입력해주세요");
             return;
         }
@@ -41,9 +41,9 @@ function PlaceModal({ initialData, onClose, onSave }) {
 
                 <form className="place-form" onSubmit={handleSubmit}>
                     <input
-                        name="name"
+                        name="title"
                         placeholder="장소명(필수)*"
-                        value={form.name}
+                        value={form.title}
                         onChange={handleChange}
                         required
                     />
@@ -54,17 +54,17 @@ function PlaceModal({ initialData, onClose, onSave }) {
                         onChange={handleChange}
                     />
                     <input
-                        name="link"
+                        name="sourceUrl"
                         placeholder="링크(필수)*"
-                        value={form.link}
+                        value={form.sourceUrl}
                         onChange={handleChange}
                         required
                     />
                     <input
-                        name="budget"
+                        name="estimatedCost"
                         type="number"
                         placeholder="예산(선택)"
-                        value={form.budget}
+                        value={form.estimatedCost}
                         onChange={handleChange}
                     />
                     <textarea
@@ -75,7 +75,11 @@ function PlaceModal({ initialData, onClose, onSave }) {
                     />
 
                     <div className="place-modal-actions">
-                        <button type="button" onClick={onClose} className="modal-cancel-btn">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="modal-cancel-btn"
+                        >
                             취소
                         </button>
                         <button type="submit" className="modal-save-btn">
