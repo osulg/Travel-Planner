@@ -105,7 +105,64 @@
 .planner-section-header {
     display: flex;
     align-items: center;
-    min-height: 32px;
+    gap: 14px;
+    min-height: 42px;
+    margin-bottom: 8px;
+}
+
+.planner-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 42px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.planner-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.planner-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.planner-quick-actions .planner-quick-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #dcdcdc;
+    background-color: #ffffff;
+    color: #222222;
+    border-radius: 999px;
+    height: 42px;
+    min-width: 72px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.planner-quick-actions .planner-quick-btn:hover {
+    background-color: #f7f7f7;
+}
+
+.planner-quick-actions .planner-quick-btn:active {
+    transform: scale(0.98);
 }
 
 .planner-board {

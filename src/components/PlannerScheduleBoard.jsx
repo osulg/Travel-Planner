@@ -1,3 +1,6 @@
+import "../styles/trip-create.css";
+
+
 const PlannerScheduleBoard = ({
     tripDays,
     scheduledItems,
@@ -72,18 +75,21 @@ const PlannerScheduleBoard = ({
 
                 <div className="planner-quick-actions">
                     <button
+                        type="button"
                         className="planner-quick-btn"
                         onClick={() => onOpenQuickSchedule("취침")}
                     >
                         취침
                     </button>
                     <button
+                        type="button"
                         className="planner-quick-btn"
                         onClick={() => onOpenQuickSchedule("이동")}
                     >
                         이동
                     </button>
                     <button
+                        type="button"
                         className="planner-quick-btn"
                         onClick={() => onOpenQuickSchedule("휴식")}
                     >
