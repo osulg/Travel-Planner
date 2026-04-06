@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../styles/schedule-modal.css";
 
-function ScheduleModal({ place, tripDays, onClose, onSave }) {
+function ScheduleModal({ place, fixedType, tripDays, onClose, onSave }) {
     const [date, setDate] = useState(tripDays[0]?.date || "");
     const [startTime, setStartTime] = useState("09:00");
     const [endTime, setEndTime] = useState("10:00");
@@ -18,24 +18,36 @@ function ScheduleModal({ place, tripDays, onClose, onSave }) {
         return `${period} ${String(displayHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
     };
 
+    const scheduleTitle = place?.title || fixedType || "";
+    const isSleepSchedule = fixedType === "취침";
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const start = convertTimeToMinutes(startTime);
         const end = convertTimeToMinutes(endTime);
+        const isOvernight = isSleepSchedule && end < start;
 
-        if (end <= start) {
+        if (!isSleepSchedule && end <= start) {
             alert("종료 시간은 시작 시간보다 뒤여야 합니다.");
+            return;
+        }
+
+        if (isSleepSchedule && end === start) {
+            alert("취침 일정은 시작 시간과 종료 시간이 같을 수 없습니다.");
             return;
         }
 
         onSave({
             id: Date.now(),
-            placeId: place.id,
-            title: place.title,
+            type: place ? "place" : "fixed",
+            placeId: place?.id || null,
+            category: fixedType || null,
+            title: scheduleTitle,
             date,
             startTime,
             endTime,
+            overnight: isOvernight,
         });
     };
 
@@ -45,7 +57,7 @@ function ScheduleModal({ place, tripDays, onClose, onSave }) {
                 <div className="schedule-modal-header">
                     <div>
                         <h2 className="schedule-modal-title">일정 확정</h2>
-                        <p className="schedule-modal-place">{place.title}</p>
+                        <p className="schedule-modal-place">{scheduleTitle}</p>
                     </div>
 
                     <button

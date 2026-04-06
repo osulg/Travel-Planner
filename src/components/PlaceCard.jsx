@@ -1,7 +1,5 @@
 import "../styles/place-card.css";
-import { FiEdit2 } from "react-icons/fi";
-import { FiThumbsUp, FiThumbsDown } from "react-icons/fi";
-
+import { FiThumbsUp, FiThumbsDown, FiMessageCircle } from "react-icons/fi";
 function PlaceCard({ place, onEdit, onLike, onDislike, onToggleMust, onSchedule }) {
     return (
         <div className="place-card">
@@ -60,6 +58,14 @@ function PlaceCard({ place, onEdit, onLike, onDislike, onToggleMust, onSchedule 
                 >
                     <FiThumbsDown size={16} />
                     <span>{place.dislikes}</span>
+                </button>
+
+                <button
+                    className="action-btn small"
+                    type="button"
+                >
+                    <FiMessageCircle size={16} />
+                    <span>{place.comments || 0}</span>
                 </button>
             </div>
 

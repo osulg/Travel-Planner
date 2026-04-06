@@ -3,23 +3,75 @@ import PlaceCard from "./PlaceCard";
 import PlaceModal from "./PlaceModal";
 import ScheduleModal from "./ScheduleModal";
 
+const parseDateString = (dateString) => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+};
+
+const formatDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
 const getTripDays = (startDate, endDate) => {
     if (!startDate || !endDate) return [];
 
     const result = [];
-    const current = new Date(startDate);
-    const end = new Date(endDate);
+    const current = parseDateString(startDate);
+    const end = parseDateString(endDate);
 
     current.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
 
     while (current <= end) {
         result.push({
-            date: current.toISOString().split("T")[0],
+            date: formatDateString(current),
             label: `${current.getMonth() + 1}/${current.getDate()}`,
         });
         current.setDate(current.getDate() + 1);
     }
+
+    return result;
+};
+
+const getNextDateString = (dateString) => {
+    const date = parseDateString(dateString);
+    date.setDate(date.getDate() + 1);
+    return formatDateString(date);
+};
+
+const buildRenderSchedulesForDay = (scheduledItems, dayDate) => {
+    const result = [];
+
+    scheduledItems.forEach((item) => {
+        const isOvernight = item.overnight === true;
+
+        if (!isOvernight && item.date === dayDate) {
+            result.push({
+                ...item,
+                renderStartTime: item.startTime,
+                renderEndTime: item.endTime,
+            });
+        }
+
+        if (isOvernight && item.date === dayDate) {
+            result.push({
+                ...item,
+                renderStartTime: item.startTime,
+                renderEndTime: "24:00",
+            });
+        }
+
+        if (isOvernight && getNextDateString(item.date) === dayDate) {
+            result.push({
+                ...item,
+                renderStartTime: "00:00",
+                renderEndTime: item.endTime,
+            });
+        }
+    });
 
     return result;
 };
@@ -36,6 +88,7 @@ function PlannerTab({
 
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const [selectedPlace, setSelectedPlace] = useState(null);
+    const [selectedScheduleType, setSelectedScheduleType] = useState(null);
 
     const tripDays = useMemo(() => {
         return getTripDays(roomData?.startDate, roomData?.endDate);
@@ -45,6 +98,8 @@ function PlannerTab({
     const HOUR_HEIGHT = 64;
 
     const convertTimeToMinutes = (time) => {
+        if (time === "24:00") return 24 * 60;
+
         const [hour, minute] = time.split(":").map(Number);
         return hour * 60 + minute;
     };
@@ -78,6 +133,7 @@ function PlannerTab({
                 id: Date.now(),
                 likes: 0,
                 dislikes: 0,
+                comments: 0,
                 isMust: false,
                 userReaction: null,
                 ...formData,
@@ -88,7 +144,6 @@ function PlannerTab({
 
         handleCloseModal();
     };
-
 
     const handleToggleMust = (placeId) => {
         setPlaces((prev) =>
@@ -162,23 +217,23 @@ function PlannerTab({
         );
     };
 
-    const handleOpenScheduleModal = (place) => {
+    const handleOpenScheduleModal = (place = null, type = null) => {
         setSelectedPlace(place);
+        setSelectedScheduleType(type);
         setIsScheduleModalOpen(true);
     };
 
     const handleCloseScheduleModal = () => {
         setSelectedPlace(null);
+        setSelectedScheduleType(null);
         setIsScheduleModalOpen(false);
     };
 
-    // 스케줄 저장
     const handleSaveSchedule = (scheduleData) => {
         setScheduledItems((prev) => [scheduleData, ...prev]);
         handleCloseScheduleModal();
     };
 
-    // 스케줄 삭제
     const handleDeleteSchedule = (scheduleId) => {
         setScheduledItems((prev) =>
             prev.filter((item) => item.id !== scheduleId)
@@ -190,6 +245,27 @@ function PlannerTab({
             <div className="planner-left">
                 <div className="planner-section-header">
                     <h3 className="planner-title">일정표</h3>
+
+                    <div className="planner-quick-actions">
+                        <button
+                            className="planner-quick-btn"
+                            onClick={() => handleOpenScheduleModal(null, "취침")}
+                        >
+                            취침
+                        </button>
+                        <button
+                            className="planner-quick-btn"
+                            onClick={() => handleOpenScheduleModal(null, "이동")}
+                        >
+                            이동
+                        </button>
+                        <button
+                            className="planner-quick-btn"
+                            onClick={() => handleOpenScheduleModal(null, "휴식")}
+                        >
+                            휴식
+                        </button>
+                    </div>
                 </div>
 
                 <div className="planner-board">
@@ -211,8 +287,13 @@ function PlannerTab({
                             }}
                         >
                             {tripDays.map((day) => {
-                                const daySchedules = scheduledItems.filter(
-                                    (item) => item.date === day.date
+                                const daySchedules = buildRenderSchedulesForDay(
+                                    scheduledItems,
+                                    day.date
+                                ).sort(
+                                    (a, b) =>
+                                        convertTimeToMinutes(a.renderStartTime) -
+                                        convertTimeToMinutes(b.renderStartTime)
                                 );
 
                                 return (
@@ -227,12 +308,16 @@ function PlannerTab({
                                             ))}
 
                                             {daySchedules.map((item) => {
-                                                const startMinutes = convertTimeToMinutes(item.startTime);
-                                                const endMinutes = convertTimeToMinutes(item.endTime);
+                                                const startMinutes = convertTimeToMinutes(
+                                                    item.renderStartTime
+                                                );
+                                                const endMinutes = convertTimeToMinutes(
+                                                    item.renderEndTime
+                                                );
 
                                                 return (
                                                     <div
-                                                        key={item.id}
+                                                        key={`${item.id}-${day.date}-${item.renderStartTime}`}
                                                         className="schedule-block"
                                                         style={{
                                                             top: `${(startMinutes / 60) * HOUR_HEIGHT}px`,
@@ -248,7 +333,7 @@ function PlannerTab({
 
                                                         <strong>{item.title}</strong>
                                                         <span>
-                                                            {item.startTime} - {item.endTime}
+                                                            {item.renderStartTime} - {item.renderEndTime}
                                                         </span>
                                                     </div>
                                                 );
@@ -296,9 +381,10 @@ function PlannerTab({
                 />
             )}
 
-            {isScheduleModalOpen && selectedPlace && (
+            {isScheduleModalOpen && (selectedPlace || selectedScheduleType) && (
                 <ScheduleModal
                     place={selectedPlace}
+                    fixedType={selectedScheduleType}
                     tripDays={tripDays}
                     onClose={handleCloseScheduleModal}
                     onSave={handleSaveSchedule}

@@ -84,8 +84,9 @@
 
 .place-action-row {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+    margin-top: 18px;
 }
 
 .action-btn {
