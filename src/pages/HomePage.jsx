@@ -45,6 +45,14 @@ function HomePage() {
     setIsModalOpen(true)
   }
 
+  const handleDeleteRoom = (roomId) => {
+    const isConfirmed = window.confirm('이 여행방을 삭제할까요?')
+
+    if (!isConfirmed) return
+
+    setRooms((prev) => prev.filter((room) => room.id !== roomId))
+  }
+
   const handleStart = () => {
     if (name.trim() === '') {
       alert('이름을 입력해주세요')
@@ -91,6 +99,7 @@ function HomePage() {
                 key={trip.id}
                 trip={trip}
                 onClick={handleTripClick}
+                onDelete={handleDeleteRoom}
               />
             ))
           )}

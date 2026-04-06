@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/schedule-modal.css";
 
 function ScheduleModal({ place, tripDays, onClose, onSave }) {
     const [date, setDate] = useState(tripDays[0]?.date || "");
@@ -8,6 +9,13 @@ function ScheduleModal({ place, tripDays, onClose, onSave }) {
     const convertTimeToMinutes = (time) => {
         const [hour, minute] = time.split(":").map(Number);
         return hour * 60 + minute;
+    };
+
+    const formatKoreanTime = (time) => {
+        const [hour, minute] = time.split(":").map(Number);
+        const period = hour < 12 ? "오전" : "오후";
+        const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+        return `${period} ${String(displayHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
     };
 
     const handleSubmit = (e) => {
@@ -32,43 +40,83 @@ function ScheduleModal({ place, tripDays, onClose, onSave }) {
     };
 
     return (
-        <div className="place-modal-overlay" onClick={onClose}>
-            <div className="place-modal" onClick={(e) => e.stopPropagation()}>
-                <h2>일정 확정</h2>
-                <p>{place.title}</p>
+        <div className="schedule-modal-overlay" onClick={onClose}>
+            <div className="schedule-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="schedule-modal-header">
+                    <div>
+                        <h2 className="schedule-modal-title">일정 확정</h2>
+                        <p className="schedule-modal-place">{place.title}</p>
+                    </div>
 
-                <form className="place-form" onSubmit={handleSubmit}>
-                    <select value={date} onChange={(e) => setDate(e.target.value)}>
-                        {tripDays.map((day) => (
-                            <option key={day.date} value={day.date}>
-                                {day.label}
-                            </option>
-                        ))}
-                    </select>
+                    <button
+                        type="button"
+                        className="schedule-modal-close"
+                        onClick={onClose}
+                        aria-label="닫기"
+                    >
+                        ×
+                    </button>
+                </div>
 
-                    <input
-                        type="time"
-                        step="60"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                    />
+                <form className="schedule-form" onSubmit={handleSubmit}>
+                    <div className="schedule-field">
+                        <label className="schedule-label">날짜</label>
+                        <select
+                            className="schedule-select"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                        >
+                            {tripDays.map((day) => (
+                                <option key={day.date} value={day.date}>
+                                    {day.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                    <input
-                        type="time"
-                        step="60"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                    />
+                    <div className="schedule-time-grid">
+                        <div className="schedule-field">
+                            <label className="schedule-label">시작 시간</label>
+                            <div className="schedule-time-box">
+                                <span className="schedule-time-preview">
+                                    {formatKoreanTime(startTime)}
+                                </span>
+                                <input
+                                    className="schedule-time-input"
+                                    type="time"
+                                    step="60"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                    <div className="place-modal-actions">
+                        <div className="schedule-field">
+                            <label className="schedule-label">종료 시간</label>
+                            <div className="schedule-time-box">
+                                <span className="schedule-time-preview">
+                                    {formatKoreanTime(endTime)}
+                                </span>
+                                <input
+                                    className="schedule-time-input"
+                                    type="time"
+                                    step="60"
+                                    value={endTime}
+                                    onChange={(e) => setEndTime(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="schedule-modal-actions">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="modal-cancel-btn"
+                            className="schedule-cancel-btn"
                         >
                             취소
                         </button>
-                        <button type="submit" className="modal-save-btn">
+                        <button type="submit" className="schedule-save-btn">
                             저장
                         </button>
                     </div>
