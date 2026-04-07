@@ -230,6 +230,9 @@
     border: 1px solid #e5e5e5;
     border-radius: 20px;
     padding: 18px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ececec;
 }
 
 .place-card-top {
@@ -242,6 +245,12 @@
 .place-card-title {
     font-size: 22px;
     font-weight: 700;
+}
+
+.place-card.highlighted {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 22px 40px rgba(0, 0, 0, 0.18);
+    background: #F1F3FD;
 }
 
 .place-card-description,
@@ -442,7 +451,7 @@
 }
 
 .schedule-delete-btn:hover {
-    background: rgba(255, 255, 255, 0.28);
+    background: #888;
 }
 
 .schedule-block strong {

@@ -17,6 +17,8 @@ function RoomPage() {
     const [votes, setVotes] = useState([])
     const [scheduledItems, setScheduledItems] = useState([])
 
+    const [highlightedPlaceId, setHighlightedPlaceId] = useState(null);
+
     useEffect(() => {
         setIsLoading(true)
 
@@ -59,6 +61,13 @@ function RoomPage() {
         localStorage.setItem('rooms', JSON.stringify(updatedRooms))
     }, [roomId, roomData, places, votes, scheduledItems])
 
+    const handleScheduleItemClick = (item) => {
+        console.log("clicked item:", item);
+
+        if (!item.placeId) return;
+        setHighlightedPlaceId(item.placeId);
+    }
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'planner':
@@ -69,6 +78,8 @@ function RoomPage() {
                         scheduledItems={scheduledItems}
                         setScheduledItems={setScheduledItems}
                         roomData={roomData}
+                        highlightedPlaceId={highlightedPlaceId}
+                        onScheduleItemClick={handleScheduleItemClick}
                     />
                 )
 

@@ -6,6 +6,7 @@ const PlannerScheduleBoard = ({
     scheduledItems,
     onDeleteSchedule,
     onOpenQuickSchedule,
+    onScheduleItemClick,
 }) => {
     const hours = Array.from({ length: 24 }, (_, index) => index);
     const HOUR_HEIGHT = 64;
@@ -149,6 +150,7 @@ const PlannerScheduleBoard = ({
                                                 <div
                                                     key={`${item.id}-${day.date}-${item.renderStartTime}`}
                                                     className="schedule-block"
+                                                    onClick={() => onScheduleItemClick?.(item)}
                                                     style={{
                                                         top: `${(startMinutes / 60) * HOUR_HEIGHT}px`,
                                                         height: `${((endMinutes - startMinutes) / 60) * HOUR_HEIGHT}px`,
@@ -156,7 +158,10 @@ const PlannerScheduleBoard = ({
                                                 >
                                                     <button
                                                         className="schedule-delete-btn"
-                                                        onClick={() => onDeleteSchedule(item.id)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onDeleteSchedule(item.id);
+                                                        }}
                                                     >
                                                         ×
                                                     </button>

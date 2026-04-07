@@ -44,6 +44,8 @@ function PlannerTab({
     scheduledItems,
     setScheduledItems,
     roomData,
+    highlightedPlaceId,
+    onScheduleItemClick,
 }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPlace, setEditingPlace] = useState(null);
@@ -298,9 +300,8 @@ function PlannerTab({
                 tripDays={tripDays}
                 scheduledItems={scheduledItems}
                 onDeleteSchedule={handleDeleteSchedule}
-                onOpenQuickSchedule={(type) =>
-                    handleOpenScheduleModal(null, type)
-                }
+                onOpenQuickSchedule={(type) => handleOpenScheduleModal(null, type)}
+                onScheduleItemClick={onScheduleItemClick}
             />
 
             <aside className="planner-sidebar">
@@ -325,6 +326,7 @@ function PlannerTab({
                             onDislike={() => handleDislike(place.id)}
                             onSchedule={handleOpenScheduleModal}
                             onOpenComments={handleOpenComments}
+                            isHighlighted={highlightedPlaceId === place.id}
                         />
                     ))}
                 </div>

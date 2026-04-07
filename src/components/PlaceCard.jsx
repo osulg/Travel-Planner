@@ -9,11 +9,13 @@ function PlaceCard({
     onToggleMust,
     onSchedule,
     onOpenComments,
+    isHighlighted,
+    ...rest
 }) {
     const commentCount = Array.isArray(place.comments) ? place.comments.length : 0;
 
     return (
-        <div className="place-card">
+        <div className={`place-card ${isHighlighted ? "highlighted" : ""}`}>
             <div className="place-card-header">
                 <div className="place-title-wrap">
                     <h3 className="place-name">{place.title}</h3>
