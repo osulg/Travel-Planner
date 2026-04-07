@@ -42,7 +42,6 @@ function ScheduleModal({ place, fixedType, tripDays, onClose, onSave }) {
             id: Date.now(),
             type: place ? "place" : "fixed",
             placeId: place?.id || null,
-            category: fixedType || null,
             title: scheduleTitle,
             date,
             startTime,

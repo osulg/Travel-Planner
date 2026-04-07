@@ -61,15 +61,6 @@
   font-size: 14px;
 }
 
-.host-badge {
-  background: #0b1230;
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-
 .field-label {
   display: block;
   margin-bottom: 8px;

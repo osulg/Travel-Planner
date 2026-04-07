@@ -4,7 +4,6 @@ import "../styles/place-modal.css";
 function PlaceModal({ initialData, onClose, onSave }) {
     const [form, setForm] = useState({
         title: initialData?.title || "",
-        category: initialData?.category || "",
         sourceUrl: initialData?.sourceUrl || "",
         memo: initialData?.memo || "",
         estimatedCost: initialData?.estimatedCost || "",
@@ -46,12 +45,6 @@ function PlaceModal({ initialData, onClose, onSave }) {
                         value={form.title}
                         onChange={handleChange}
                         required
-                    />
-                    <input
-                        name="category"
-                        placeholder="카테고리(선택)"
-                        value={form.category}
-                        onChange={handleChange}
                     />
                     <input
                         name="sourceUrl"

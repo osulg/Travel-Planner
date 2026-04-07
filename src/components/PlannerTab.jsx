@@ -3,6 +3,7 @@ import PlaceCard from "./PlaceCard";
 import PlaceModal from "./PlaceModal";
 import ScheduleModal from "./ScheduleModal";
 import PlannerScheduleBoard from "./PlannerScheduleBoard";
+import CommentModal from "./CommentModal";
 
 const parseDateString = (dateString) => {
     const [year, month, day] = dateString.split("-").map(Number);
@@ -55,6 +56,16 @@ function PlannerTab({
         return getTripDays(roomData?.startDate, roomData?.endDate);
     }, [roomData?.startDate, roomData?.endDate]);
 
+    // 댓글
+    const normalizeComments = (comments) => {
+        if (Array.isArray(comments)) return comments;
+        return [];
+    };
+
+    // 댓글
+    const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+    const [selectedCommentPlace, setSelectedCommentPlace] = useState(null);
+
     const handleOpenAddModal = () => {
         setEditingPlace(null);
         setIsModalOpen(true);
@@ -71,12 +82,32 @@ function PlannerTab({
     };
 
     const handleSavePlace = (formData) => {
+        const normalizedFormData = {
+            ...formData,
+            title: formData.title?.trim() || "",
+        };
+
         if (editingPlace) {
             setPlaces((prev) =>
                 prev.map((place) =>
                     place.id === editingPlace.id
-                        ? { ...place, ...formData }
+                        ? {
+                            ...place,
+                            ...normalizedFormData,
+                            title: normalizedFormData.title,
+                        }
                         : place
+                )
+            );
+
+            setScheduledItems((prev) =>
+                prev.map((item) =>
+                    item.placeId === editingPlace.id
+                        ? {
+                            ...item,
+                            title: normalizedFormData.title,
+                        }
+                        : item
                 )
             );
         } else {
@@ -84,10 +115,11 @@ function PlannerTab({
                 id: Date.now(),
                 likes: 0,
                 dislikes: 0,
-                comments: 0,
+                comments: [],
                 isMust: false,
                 userReaction: null,
-                ...formData,
+                ...normalizedFormData,
+                title: normalizedFormData.title,
             };
 
             setPlaces((prev) => [newPlace, ...prev]);
@@ -168,6 +200,75 @@ function PlannerTab({
         );
     };
 
+    // 댓글 열기/닫기
+    const handleOpenComments = (place) => {
+        setSelectedCommentPlace(place);
+        setIsCommentModalOpen(true);
+    };
+
+    const handleCloseComments = () => {
+        setSelectedCommentPlace(null);
+        setIsCommentModalOpen(false);
+    };
+
+    // 댓글 추가
+    const handleAddComment = (placeId, text) => {
+        const newComment = {
+            id: Date.now(),
+            author: localStorage.getItem("userName") || "홍길동",
+            text,
+            createdAt: new Date().toLocaleString("ko-KR"),
+        };
+
+        setPlaces((prev) =>
+            prev.map((place) =>
+                place.id === placeId
+                    ? {
+                        ...place,
+                        comments: [...(Array.isArray(place.comments) ? place.comments : []), newComment],
+                    }
+                    : place
+            )
+        );
+
+        setSelectedCommentPlace((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    comments: [...(Array.isArray(prev.comments) ? prev.comments : []), newComment],
+                }
+                : prev
+        );
+    };
+
+    // 댓글 삭제
+    const handleDeleteComment = (placeId, commentId) => {
+        setPlaces((prev) =>
+            prev.map((place) =>
+                place.id === placeId
+                    ? {
+                        ...place,
+                        comments: (Array.isArray(place.comments) ? place.comments : []).filter(
+                            (comment) => comment.id !== commentId
+                        ),
+                    }
+                    : place
+            )
+        );
+
+        setSelectedCommentPlace((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    comments: (Array.isArray(prev.comments) ? prev.comments : []).filter(
+                        (comment) => comment.id !== commentId
+                    ),
+                }
+                : prev
+        );
+    };
+
+    // 스케줄 확정 모달
     const handleOpenScheduleModal = (place = null, type = null) => {
         setSelectedPlace(place);
         setSelectedScheduleType(type);
@@ -223,6 +324,7 @@ function PlannerTab({
                             onLike={() => handleLike(place.id)}
                             onDislike={() => handleDislike(place.id)}
                             onSchedule={handleOpenScheduleModal}
+                            onOpenComments={handleOpenComments}
                         />
                     ))}
                 </div>
@@ -243,6 +345,15 @@ function PlannerTab({
                     tripDays={tripDays}
                     onClose={handleCloseScheduleModal}
                     onSave={handleSaveSchedule}
+                />
+            )}
+
+            {isCommentModalOpen && selectedCommentPlace && (
+                <CommentModal
+                    place={selectedCommentPlace}
+                    onClose={handleCloseComments}
+                    onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
                 />
             )}
         </section>

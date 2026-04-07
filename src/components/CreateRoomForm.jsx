@@ -50,7 +50,6 @@ function CreateRoomForm({ onCreateRoom }) {
                     id: 1,
                     name: localStorage.getItem('userName') || '홍길동',
                     joinedAt: new Date().toISOString(),
-                    role: 'host',
                 },
             ],
         }

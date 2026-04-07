@@ -1,0 +1,104 @@
+.comment-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.comment-modal {
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.comment-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.comment-modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.comment-modal-subtitle {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.comment-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.comment-list {
+    max-height: 280px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.comment-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.comment-item-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.comment-text {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.comment-delete-btn {
+    border: none;
+    background: none;
+    color: #777;
+    cursor: pointer;
+    padding: 0;
+}
+
+.comment-form {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-input {
+    flex: 1;
+    height: 42px;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    padding: 0 14px;
+}
+
+.comment-submit-btn {
+    height: 42px;
+    border: none;
+    border-radius: 999px;
+    padding: 0 16px;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+}
+
+.comment-empty {
+    color: #888;
+    font-size: 14px;
+}

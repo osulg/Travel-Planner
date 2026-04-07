@@ -42,9 +42,6 @@ export default function SettingsTab({ roomData }) {
                                 <strong>{member.name}</strong>
                                 <p>{formatJoinedAt(member.joinedAt)}</p>
                             </div>
-                            {member.role === "host" && (
-                                <span className="host-badge">호스트</span>
-                            )}
                         </div>
                     ))}
                 </div>

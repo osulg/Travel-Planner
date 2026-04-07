@@ -12,6 +12,7 @@ function RoomPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('planner')
     const [roomData, setRoomData] = useState(null)
+
     const [places, setPlaces] = useState([])
     const [votes, setVotes] = useState([])
     const [scheduledItems, setScheduledItems] = useState([])
@@ -20,11 +21,18 @@ function RoomPage() {
         setIsLoading(true)
 
         const savedRooms = JSON.parse(localStorage.getItem('rooms')) || []
-        const foundRoom = savedRooms.find((room) => String(room.id) === String(roomId))
+        const foundRoom = savedRooms.find(
+            (room) => String(room.id) === String(roomId)
+        )
 
         if (foundRoom) {
+            const normalizedPlaces = (foundRoom.places || []).map((place) => ({
+                ...place,
+                title: place.title || place.name || '',
+            }))
+
             setRoomData(foundRoom)
-            setPlaces(foundRoom.places || [])
+            setPlaces(normalizedPlaces)
             setVotes(foundRoom.votes || [])
             setScheduledItems(foundRoom.scheduledItems || [])
         }
@@ -132,9 +140,7 @@ function RoomPage() {
                 </button>
             </nav>
 
-            <main className="room-content">
-                {renderTabContent()}
-            </main>
+            <main className="room-content">{renderTabContent()}</main>
         </div>
     )
 }

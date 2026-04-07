@@ -1,11 +1,21 @@
 import "../styles/place-card.css";
 import { FiThumbsUp, FiThumbsDown, FiMessageCircle } from "react-icons/fi";
-function PlaceCard({ place, onEdit, onLike, onDislike, onToggleMust, onSchedule }) {
+
+function PlaceCard({
+    place,
+    onEdit,
+    onLike,
+    onDislike,
+    onToggleMust,
+    onSchedule,
+    onOpenComments,
+}) {
+    const commentCount = Array.isArray(place.comments) ? place.comments.length : 0;
+
     return (
         <div className="place-card">
             <div className="place-card-header">
                 <div className="place-title-wrap">
-                    <span className="place-category">{place.category}</span>
                     <h3 className="place-name">{place.title}</h3>
                 </div>
 
@@ -63,9 +73,10 @@ function PlaceCard({ place, onEdit, onLike, onDislike, onToggleMust, onSchedule 
                 <button
                     className="action-btn small"
                     type="button"
+                    onClick={() => onOpenComments(place)}
                 >
                     <FiMessageCircle size={16} />
-                    <span>{place.comments || 0}</span>
+                    <span>{commentCount}</span>
                 </button>
             </div>
 
