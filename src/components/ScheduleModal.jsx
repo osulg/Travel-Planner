@@ -120,13 +120,6 @@ function ScheduleModal({ place, fixedType, tripDays, onClose, onSave }) {
                     </div>
 
                     <div className="schedule-modal-actions">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="schedule-cancel-btn"
-                        >
-                            취소
-                        </button>
                         <button type="submit" className="schedule-save-btn">
                             저장
                         </button>

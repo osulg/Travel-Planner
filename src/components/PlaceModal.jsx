@@ -36,9 +36,18 @@ function PlaceModal({ initialData, onClose, onSave }) {
     return (
         <div className="place-modal-overlay" onClick={onClose}>
             <div className="place-modal" onClick={(e) => e.stopPropagation()}>
-                <h2>{initialData ? "장소 수정" : "장소 추가"}</h2>
+                <button
+                    type="button"
+                    className="place-modal-close"
+                    onClick={onClose}
+                >
+                    ×
+                </button>
+
+                <h2>{initialData ? "장소 수정" : "새 장소 추가"}</h2>
 
                 <form className="place-form" onSubmit={handleSubmit}>
+                    <label>장소 이름*</label>
                     <input
                         name="title"
                         placeholder="장소명(필수)*"
@@ -46,24 +55,27 @@ function PlaceModal({ initialData, onClose, onSave }) {
                         onChange={handleChange}
                         required
                     />
+                    <label>링크*</label>
                     <input
                         name="sourceUrl"
-                        placeholder={initialData ? "링크 수정 불가" : "링크(필수)*"}
+                        placeholder={initialData ? "링크 수정 불가" : "http://map.naver.com"}
                         value={form.sourceUrl}
                         onChange={handleChange}
                         required
                         disabled={!!initialData}
                     />
+                    <label>예산(선택)</label>
                     <input
                         name="estimatedCost"
                         type="number"
-                        placeholder="예산(선택)"
+                        placeholder="20000"
                         value={form.estimatedCost}
                         onChange={handleChange}
                     />
+                    <label>메모(선택)</label>
                     <textarea
                         name="memo"
-                        placeholder="메모(선택)"
+                        placeholder="저녁 산책 가능"
                         value={form.memo}
                         onChange={handleChange}
                     />
