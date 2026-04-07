@@ -97,6 +97,8 @@ function PlannerTab({
                             ...place,
                             ...normalizedFormData,
                             title: normalizedFormData.title,
+                            sourceUrl: place.sourceUrl,
+                            sourceType: place.sourceType,
                         }
                         : place
                 )

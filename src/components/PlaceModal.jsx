@@ -48,10 +48,11 @@ function PlaceModal({ initialData, onClose, onSave }) {
                     />
                     <input
                         name="sourceUrl"
-                        placeholder="링크(필수)*"
+                        placeholder={initialData ? "링크 수정 불가" : "링크(필수)*"}
                         value={form.sourceUrl}
                         onChange={handleChange}
                         required
+                        disabled={!!initialData}
                     />
                     <input
                         name="estimatedCost"
