@@ -170,3 +170,12 @@
 .mini-action-btn:hover {
     background: #f7f7f7;
 }
+
+.delete-btn {
+    color: #e53935;
+    border-color: #f0b4b4;
+}
+
+.delete-btn:hover {
+    background: #fff5f5;
+}

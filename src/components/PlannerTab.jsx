@@ -179,6 +179,18 @@ function PlannerTab({
         handleCloseModal();
     };
 
+    /* func: 장소 삭제 함수 */
+    const handleDeletePlace = (placeId) => {
+        const confirmed = window.confirm("이 장소를 삭제하시겠습니까?");
+
+        if (!confirmed)
+            return;
+
+        setPlaces((prev) =>
+            prev.filter((place) => place.id !== placeId)
+        );
+    };
+
     /* func: 필수 장소 토글 */
     const handleToggleMust = (placeId) => {
         setPlaces((prev) =>
@@ -387,13 +399,14 @@ function PlannerTab({
                     </button>
                 </div>
 
-                {/* 장소 추가 버튼 */}
+                {/* 장소 목록 리스트 */}
                 <div className="place-card-list">
                     {places.map((place) => (
                         <PlaceCard
                             key={place.id}
                             place={place}
                             onEdit={() => handleOpenEditModal(place)}
+                            onDelete={() => handleDeletePlace(place.id)}
                             onToggleMust={handleToggleMust}
                             onLike={() => handleLike(place.id)}
                             onDislike={() => handleDislike(place.id)}

@@ -5,6 +5,7 @@ import { FiThumbsUp, FiThumbsDown, FiMessageCircle } from "react-icons/fi";
 function PlaceCard({
     place,              // 장소 데이터 객체
     onEdit,             // 수정 버튼 클릭 함수
+    onDelete,           // 삭제 버튼 클릭 함수
     onLike,             // 좋아요 클릭 함수
     onDislike,          // 싫어요 클릭 함수
     onToggleMust,       // 필수 장소 토글 함수
@@ -40,6 +41,11 @@ function PlaceCard({
                     {/* 수정 버튼 */}
                     <button className="mini-action-btn" onClick={onEdit}>
                         수정
+                    </button>
+
+                    {/* 삭제 버튼 */}
+                    <button className="mini-action-btn" onClick={onDelete}>
+                        삭제
                     </button>
 
                     {/* 필수 장소 뱃지 */}
