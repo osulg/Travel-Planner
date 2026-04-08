@@ -1,11 +1,13 @@
-// Header Component
-// 홈 화면의 상단 아이콘, 제목, 설명 문구
 import { FiSend } from "react-icons/fi";
 
+// Header Component
+// 홈 화면의 상단 아이콘, 제목, 설명 문구
 function Header() {
   return (
     // 헤더 전체 영역
+    // className="header"는 CSS에서 이 영역 전체 스타일을 줄 때 사용
     <header className="header">
+      {/* 아이콘 영역 */}
       <div className="header-icon">
         <FiSend size={22} />
       </div>
@@ -21,4 +23,5 @@ function Header() {
   )
 }
 
+// 다른 파일에서 import 해서 사용할 수 있도록 내보냄
 export default Header
