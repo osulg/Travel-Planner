@@ -54,35 +54,40 @@ function CommentModal({ place, onClose, onAddComment, onDeleteComment }) {
 
                 {/* 댓글 목록 영역 */}
                 <div className="comment-list">
-                    // 댓글이 없을 때
-                    {comments.length === 0 ? (
-                        <p className="comment-empty">아직 댓글이 없습니다.</p>
-                    ) : (
-                        // 댓글이 있을 때 목록 렌더링
-                        comments.map((comment) => (
-                            <div key={comment.id} className="comment-item">
-                                <div className="comment-item-top">
+                    {/*댓글이 없을 때*/}
+                    {
+                        comments.length === 0 ? (
+                            <p className="comment-empty">아직 댓글이 없습니다.</p>
+                        ) : (
+                            // 댓글이 있을 때 목록 렌더링
+                            comments.map((comment) => (
+                                <div key={comment.id} className="comment-item">
+                                    {/* 상단: 작성자 + 삭제 버튼 */}
                                     {/* 작성자 */}
-                                    <strong>{comment.author}</strong>
+                                    <div className="comment-item-top">
+                                        <strong>{comment.author}</strong>
 
-                                    {/* 작성 시각 */}
-                                    <span>{comment.createdAt}</span>
+                                        {/* 댓글 삭제 */}
+                                        <button
+                                            type="button"
+                                            className="comment-delete-btn"
+                                            onClick={() => onDeleteComment(place.id, comment.id)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+
+                                    {/* 댓글 본문 */}
+                                    <p className="comment-text">{comment.text}</p>
+
+                                    {/* 날짜 */}
+                                    <div className="comment-date-row">
+                                        <span className="comment-date">{comment.createdAt}</span>
+                                    </div>
                                 </div>
-
-                                {/* 댓글 본문 */}
-                                <p className="comment-text">{comment.text}</p>
-
-                                {/* 댓글 삭제 버튼 */}
-                                <button
-                                    type="button"
-                                    className="comment-delete-btn"
-                                    onClick={() => onDeleteComment(place.id, comment.id)}
-                                >
-                                    삭제
-                                </button>
-                            </div>
-                        ))
-                    )}
+                            ))
+                        )
+                    }
                 </div>
 
                 {/* 댓글 입력 폼 */}

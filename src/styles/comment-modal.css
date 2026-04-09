@@ -9,11 +9,11 @@
 }
 
 .comment-modal {
-    width: 420px;
+    width: 520px;
     max-width: calc(100vw - 32px);
     background: #fff;
-    border-radius: 20px;
-    padding: 20px;
+    border-radius: 28px;
+    padding: 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
@@ -21,80 +21,108 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .comment-modal-title {
     margin: 0;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
 }
 
 .comment-modal-subtitle {
-    margin: 4px 0 0;
+    margin: 6px 0 0;
     color: #666;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .comment-modal-close {
     border: none;
     background: transparent;
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
+    line-height: 1;
 }
 
 .comment-list {
-    max-height: 280px;
+    max-height: 420px;
     overflow-y: auto;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    padding-right: 4px;
 }
 
 .comment-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
+    background: #f7f7f8;
+    border-radius: 20px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
 }
 
 .comment-item-top {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 6px;
-    font-size: 13px;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
-.comment-text {
-    margin: 0 0 8px;
-    font-size: 14px;
+.comment-author {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
 }
 
 .comment-delete-btn {
     border: none;
     background: none;
-    color: #777;
+    color: #555;
     cursor: pointer;
     padding: 0;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.comment-text {
+    margin: 0 0 12px;
+    font-size: 17px;
+    color: #222;
+    line-height: 1.5;
+}
+
+.comment-date-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.comment-date {
+    font-size: 14px;
+    color: #8a8a8a;
 }
 
 .comment-form {
+    border-top: 1px solid #e5e5e5;
+    padding-top: 16px;
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
 .comment-input {
     flex: 1;
-    height: 42px;
+    height: 46px;
     border: 1px solid #ddd;
     border-radius: 999px;
-    padding: 0 14px;
+    padding: 0 16px;
+    font-size: 15px;
 }
 
 .comment-submit-btn {
-    height: 42px;
+    height: 46px;
     border: none;
     border-radius: 999px;
-    padding: 0 16px;
+    padding: 0 20px;
     background: #111;
     color: #fff;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
 }
 
