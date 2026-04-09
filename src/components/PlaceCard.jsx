@@ -1,5 +1,5 @@
 import "../styles/place-card.css";
-import { FiThumbsUp, FiThumbsDown, FiMessageCircle } from "react-icons/fi";
+import { FiThumbsUp, FiThumbsDown, FiMessageCircle, FiLock } from "react-icons/fi";
 
 // 장소 카드 컴포넌트
 function PlaceCard({
@@ -12,6 +12,7 @@ function PlaceCard({
     onSchedule,         // 확정 버튼 클릭 함수
     onOpenComments,     // 댓글 모달 열기 함수
     isHighlighted,      // 강조 표시 여부
+    isLocked,             // 장소 카드 잠금 함수
     ...rest             // 나머지 props
 }) {
 
@@ -29,22 +30,34 @@ function PlaceCard({
                 {/* 장소 이름 영역 */}
                 <div className="place-title-wrap">
                     <h3 className="place-name">{place.title}</h3>
+                    {isLocked && <span className="place-lock-icon" title="확정된 일이라 수정할 수 없습니다." >
+                        <FiLock size={16} />
+                    </span>}
                 </div>
 
                 {/* 상단 버튼 영역 */}
                 <div className="place-card-header-actions">
                     {/* 일정 확정 버튼 */}
-                    <button className="mini-action-btn" onClick={() => onSchedule(place)}>
+                    <button className="mini-action-btn"
+                        onClick={() => onSchedule(place)}
+                        disabled={isLocked}
+                    >
                         확정
                     </button>
 
                     {/* 수정 버튼 */}
-                    <button className="mini-action-btn" onClick={onEdit}>
+                    <button className="mini-action-btn"
+                        onClick={onEdit}
+                        disabled={isLocked}
+                    >
                         수정
                     </button>
 
                     {/* 삭제 버튼 */}
-                    <button className="mini-action-btn" onClick={onDelete}>
+                    <button className="mini-action-btn"
+                        onClick={onDelete}
+                        disabled={isLocked}
+                    >
                         삭제
                     </button>
 
@@ -83,6 +96,7 @@ function PlaceCard({
                 <button
                     className={`action-btn small ${place.userReaction === "like" ? "active" : ""}`}
                     onClick={onLike}
+                    disabled={isLocked}
                 >
                     <FiThumbsUp size={16} />
                     <span>{place.likes}</span>
@@ -92,6 +106,7 @@ function PlaceCard({
                 <button
                     className={`action-btn small ${place.userReaction === "dislike" ? "active" : ""}`}
                     onClick={onDislike}
+                    disabled={isLocked}
                 >
                     <FiThumbsDown size={16} />
                     <span>{place.dislikes}</span>
@@ -102,6 +117,7 @@ function PlaceCard({
                     className="action-btn small"
                     type="button"
                     onClick={() => onOpenComments(place)}
+                    disabled={isLocked}
                 >
                     <FiMessageCircle size={16} />
                     <span>{commentCount}</span>
@@ -112,6 +128,7 @@ function PlaceCard({
             <button
                 className={`action-btn must-btn ${place.isMust ? "active" : ""}`}
                 onClick={() => onToggleMust(place.id)}
+                disabled={isLocked}
             >
                 ★ 필수 장소
             </button>

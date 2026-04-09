@@ -21,6 +21,17 @@
     gap: 6px;
 }
 
+.place-lock-icon {
+    display: inline-flex;
+    align-items: center;
+    color: #666;
+}
+
+.place-card button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* .place-category {
     display: inline-block;
     width: fit-content;

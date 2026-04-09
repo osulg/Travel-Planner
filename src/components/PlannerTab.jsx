@@ -94,6 +94,11 @@ function PlannerTab({
     // 현재 댓글 모달에서 보고 있는 장소
     const [selectedCommentPlace, setSelectedCommentPlace] = useState(null);
 
+    /* func: 장소 잠금 */
+    const isPlaceLocked = (placeId) => {
+        return scheduledItems.some((item) => item.placeId === placeId);
+    };
+
     /* func: 장소 추가 모달 열기 */
     const handleOpenAddModal = () => {
         // 새 추가이므로 editingPlace는 비움
@@ -103,6 +108,9 @@ function PlannerTab({
 
     /* func: 장소 수정 모달 */
     const handleOpenEditModal = (place) => {
+        if (isPlaceLocked(place.id))
+            return;
+
         // 수정할 장소를 저장
         setEditingPlace(place);
         setIsModalOpen(true);
@@ -181,6 +189,9 @@ function PlannerTab({
 
     /* func: 장소 삭제 함수 */
     const handleDeletePlace = (placeId) => {
+        if (isPlaceLocked(placeId))
+            return;
+
         const confirmed = window.confirm("이 장소를 삭제하시겠습니까?");
 
         if (!confirmed)
@@ -193,6 +204,9 @@ function PlannerTab({
 
     /* func: 필수 장소 토글 */
     const handleToggleMust = (placeId) => {
+        if (isPlaceLocked(placeId))
+            return;
+
         setPlaces((prev) =>
             prev.map((place) =>
                 place.id === placeId
@@ -204,6 +218,9 @@ function PlannerTab({
 
     /* func: 좋아요 처리 */
     const handleLike = (placeId) => {
+        if (isPlaceLocked(placeId))
+            return;
+
         setPlaces((prev) =>
             prev.map((place) => {
                 // 새 장소를 목록 맨 앞에 추가
@@ -241,6 +258,9 @@ function PlannerTab({
 
     /* func: 싫어요 처리 */
     const handleDislike = (placeId) => {
+        if (isPlaceLocked(placeId))
+            return;
+
         setPlaces((prev) =>
             prev.map((place) => {
                 if (place.id !== placeId) return place;
@@ -276,6 +296,9 @@ function PlannerTab({
 
     /* func: 댓글 모달 열기 함수 */
     const handleOpenComments = (place) => {
+        if (isPlaceLocked(place.id))
+            return;
+
         setSelectedCommentPlace(place);
         setIsCommentModalOpen(true);
     };
@@ -349,6 +372,9 @@ function PlannerTab({
 
     /* func: 일정 확정 모달 열기 */
     const handleOpenScheduleModal = (place = null, type = null) => {
+        if (place && isPlaceLocked(place.id))
+            return;
+
         setSelectedPlace(place);
         setSelectedScheduleType(type);
         setIsScheduleModalOpen(true);
@@ -413,6 +439,7 @@ function PlannerTab({
                             onSchedule={handleOpenScheduleModal}
                             onOpenComments={handleOpenComments}
                             isHighlighted={highlightedPlaceId === place.id}
+                            isLocked={isPlaceLocked(place.id)}
                         />
                     ))}
                 </div>
