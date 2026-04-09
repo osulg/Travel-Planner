@@ -36,7 +36,7 @@ function CommentModal({ place, onClose, onAddComment, onDeleteComment }) {
                 <div className="comment-modal-header">
                     <div>
                         {/* 모달 제목 */}
-                        <h2 className="comment-modal-title">한강 · 댓글</h2>
+                        <h2 className="comment-modal-title">{place.title} - 댓글</h2>
 
                         {/* 현재 어떤 장소의 댓글인지 표시 */}
                         <p className="comment-modal-subtitle">{place.title}</p>
