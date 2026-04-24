@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom'
+import { FiCalendar, FiMapPin, FiUsers } from "react-icons/fi";
+
 import Header from '../components/Header'
 import HomeTab from '../components/HomeTab'
 import CreateRoomForm from '../components/CreateRoomForm'
@@ -5,162 +9,386 @@ import MyTripBox from '../components/MyTripBox'
 import FeatureCard from '../components/FeatureCard'
 import NameModal from '../components/NameModal'
 import '../styles/home.css'
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { FiCalendar, FiMapPin, FiUsers } from "react-icons/fi";
+
+import { getRoomSummary } from '../api/roomApi'
+import { enterInviteLink } from '../api/inviteApi'
+import {
+  getTripRoomIds,
+  addTripRoomId,
+  removeTripRoomId,
+  setCurrentRoomId,
+  saveMemberForRoom,
+  saveInviteTokenForRoom,
+  getInviteTokenForRoom,
+  setActiveMemberForRoom,
+  removeInviteTokenForRoom,
+} from '../utils/storage'
 
 // 홈 메인 페이지
 function HomePage() {
-  // 페이지 이동을 위한 함수
-  // ex) 특정 여행 방 페이지로 이동할 때 사용
   const navigate = useNavigate()
 
-  const [name, setName] = useState('') // 사용자가 모달에서 입력하는 이름
-  const [password, setPassword] = useState('') // 사용자가 모달에서 입력하는 비밀번호
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
 
-  // 여행방 목록 state
-  // 처음 렌더링될 때 LocalStorage에 저장된 rooms 값 읽어옴
-  // 저장된 값이 있으면 JSON.parse로 배열로 복원
-  // 없으면 빈 값으로 시작
-  const [rooms, setRooms] = useState(() => {
-    const savedRooms = localStorage.getItem('rooms')
-    return savedRooms ? JSON.parse(savedRooms) : []
-  })
+  const [myTrips, setMyTrips] = useState([])
+  const [isTripsLoading, setIsTripsLoading] = useState(false)
 
-  const [isModalOpen, setIsModalOpen] = useState(false) // 이름/비밀번호 입력용 모달이 열려 있는지 여부
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // 홈 탭의 현재 활성 탭 상태
-  // LocalStorage에 이전 탭 기록이 있으면 그 값을 사용
-  // 없으면 기본 값은 'create'
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('homeActiveTab') || 'create'
   })
 
-  // 현재 사용자가 클릭한 여행방 정보
-  // 처음에는 아무것도 선택되지 않았으므로 null
   const [selectedTrip, setSelectedTrip] = useState(null)
 
-  // rooms 값이 바뀔 때마다 localStorage에 자동 저장
-  // 새로고침해도 여행방 목록이 유지되도록 하기 위한 용도
-  useEffect(() => {
-    localStorage.setItem('rooms', JSON.stringify(rooms))
-  }, [rooms])
-
-  // activeTab 값이 바뀔 때마다 localStorage에 저장
-  // 사용자가 마지막에 보던 탭을 기억하기 위한 용도
+  // 현재 탭 저장
   useEffect(() => {
     localStorage.setItem('homeActiveTab', activeTab)
   }, [activeTab])
 
-  /* func: 새 여행방 생성 시 실행되는 함수 */
-  const handleCreateRoom = (newRoom) => {
-    // 기존 rooms 앞쪽에 새 여행방 추가
-    // 최신 여행방이 위에 보이도록 [newRoom, ...prev] 형태 사용
-    setRooms((prev) => [newRoom, ...prev])
+  const saveCurrentUserSession = (roomId, memberInfo) => {
+    sessionStorage.setItem(
+      "currentUser",
+      JSON.stringify({
+        roomId,
+        memberId: memberInfo.memberId,
+        name: memberInfo.name,
+        role: memberInfo.role,
+      })
+    );
+  };
 
-    // 여행방을 만든 뒤에는 자동으로 '내 여행방' 탭으로 이동
+  const fetchMyTrips = async () => {
+    setIsTripsLoading(true)
+
+    try {
+      const roomIds = getTripRoomIds()
+
+      const results = await Promise.all(
+        roomIds.map(async (roomId) => {
+          try {
+            if (!roomId || roomId === 'room-uuid') {
+              console.warn('잘못된 roomId 건너뜀:', roomId)
+              return null
+            }
+
+            const response = await getRoomSummary(roomId)
+            const summary = response.data
+
+            if (!response.success || !summary) return null
+
+            console.log('getRoomSummary 전체 응답:', response)
+            console.log('response.data:', response.data)
+
+            console.log('summary data:', summary)
+            console.log('roomId 확인:', roomId)
+
+            if (!response.success || !summary) return null
+
+            return {
+              id: summary.roomId,
+              name: summary.name,
+              startDate: summary.startDate,
+              endDate: summary.endDate,
+            }
+
+          } catch (error) {
+            if (error?.response?.status === 404) {
+              removeTripRoomId(roomId)
+            }
+            console.error(`room summary 조회 실패: ${roomId}`, error)
+            return null
+          }
+        })
+      )
+
+      setMyTrips(results.filter(Boolean))
+    } finally {
+      setIsTripsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const roomIds = getTripRoomIds()
+
+    if (activeTab === 'myTrips' && roomIds.length > 0 && myTrips.length === 0) {
+      fetchMyTrips()
+    }
+  }, [activeTab, myTrips.length])
+
+  useEffect(() => {
+    const pendingInviteToken = sessionStorage.getItem("pendingInviteToken");
+    if (!pendingInviteToken) return;
+
+    setActiveTab("myTrips");
+
+    setMyTrips((prev) => {
+      const alreadyExists = prev.some(
+        (trip) => trip.inviteToken === pendingInviteToken || trip.id === `pending-${pendingInviteToken}`
+      );
+
+      if (alreadyExists) return prev;
+
+      return [
+        {
+          id: `pending-${pendingInviteToken}`,
+          name: "초대된 여행방",
+          startDate: "",
+          endDate: "",
+          inviteToken: pendingInviteToken,
+          isPendingInvite: true,
+        },
+        ...prev,
+      ];
+    });
+
+    sessionStorage.removeItem("pendingInviteToken");
+  }, []);
+
+  /* func: 새 여행방 생성 시 실행되는 함수 */
+  // api: createRoom
+  const handleCreateRoom = (roomPayload) => {
+    const roomId = roomPayload?.roomId
+    const memberId = roomPayload?.memberId
+    const inviteToken = roomPayload?.inviteToken
+
+    if (!roomId) {
+      alert('생성된 방 ID를 찾을 수 없습니다.')
+      return
+    }
+
+    addTripRoomId(roomId)
+    setCurrentRoomId(roomId)
+
+    console.log('createRoom response payload:', roomPayload)
+
+    if (memberId) {
+      const hostMember = {
+        memberId,
+        name: roomPayload?.name,
+        role: 'HOST',
+      }
+
+      saveMemberForRoom(roomId, hostMember)
+      setActiveMemberForRoom(roomId, hostMember)
+      saveCurrentUserSession(roomId, hostMember)
+    } else {
+      console.warn("방 생성 response에 memberId가 없습니다.")
+    }
+
+    if (inviteToken) {
+      saveInviteTokenForRoom(roomId, inviteToken)
+    }
+
+    setMyTrips((prev) => [
+      {
+        id: roomId,
+        name: roomPayload?.name ?? '',
+        startDate: roomPayload?.startDate ?? '',
+        endDate: roomPayload?.endDate ?? '',
+        inviteToken: roomPayload?.inviteToken ?? '',
+      },
+      ...prev.filter((trip) => trip.id !== roomId),
+    ])
+
     setActiveTab('myTrips')
   }
 
-  /* func: 사용자가 여행방 카드를 클릭했을 때 실행되는 함수*/
+  /* func: 사용자가 여행방 카드를 클릭했을 때 실행되는 함수 */
   const handleTripClick = (trip) => {
-    setSelectedTrip(trip) // 어떤 여행방을 눌렀는지 저장
-
-    // 이전 입력값이 남지 않도록 이름/비밀번호 초기화
+    setSelectedTrip(trip)
     setName('')
     setPassword('')
-
-    setIsModalOpen(true) // 이름 입력 모달 열기
+    setIsModalOpen(true)
   }
 
-  /* func: 여행방 삭제 함수 */
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedTrip(null)
+    setName('')
+    setPassword('')
+  }
+
+  /* func: 여행방 삭제 함수
+     주의: 전체 방을 지우는 게 아니라 "내 여행방 목록"에서만 제거 */
   const handleDeleteRoom = (roomId) => {
-    // 삭제할지 사용자에게 다시 확인
-    const isConfirmed = window.confirm('이 여행방을 삭제할까요?')
+    const isConfirmed = window.confirm('이 여행방을 내 목록에서 제거할까요?')
+    if (!isConfirmed) return
 
-    // 취소 누르면 바로 함수 종료
-    if (!isConfirmed)
-      return
-
-    // room.id가 삭제할 roomId와 다른 것만 남김
-    // 즉, 해당 id의 여행방 목록만 제거
-    setRooms((prev) => prev.filter((room) => room.id !== roomId))
+    removeTripRoomId(roomId)
+    setMyTrips((prev) => prev.filter((trip) => trip.id !== roomId))
   }
 
   /* func: 모달에서 '시작하기' 버튼을 눌렀을 때 실행되는 함수 */
-  const handleStart = () => {
-    // 이름 필수 -> 없으면 경고창
-    if (name.trim() === '') {
+  const handleStart = async () => {
+    const trimmedName = name.trim()
+    const trimmedPassword = password.trim()
+
+    if (trimmedName === '') {
       alert('이름을 입력해주세요')
       return
     }
 
-    // 비밀번호 필수 -> 없으면 경고창
-    if (password.trim() === '') {
+    if (trimmedPassword === '') {
       alert('비밀번호를 입력해주세요')
       return
     }
 
-    // 선택된 여행방이 없으면 더 진행하지 않음
     if (!selectedTrip) {
+      alert('선택된 여행방이 없습니다')
       return
     }
 
-    // 입력한 이름을 LocalStorage에 저장
-    // 이후 다른 페이지에서 사용자 이름이 필요할 때 사용 가능
-    localStorage.setItem('userName', name)
+    try {
+      const pendingInviteToken = sessionStorage.getItem('pendingInviteToken')
 
-    // 현재 활성 탭도 'myTrips'로 저장
-    // 홈으로 다시 돌아왔을 때 내 여행 탭이 유지되도록 함
-    localStorage.setItem('homeActiveTab', 'myTrips')
+      const inviteToken =
+        pendingInviteToken ||
+        selectedTrip.inviteToken ||
+        getInviteTokenForRoom(selectedTrip.id)
 
-    // 모달 닫기
-    setIsModalOpen(false)
+      console.log('handleStart selectedTrip:', selectedTrip)
+      console.log('handleStart inviteToken:', inviteToken)
 
-    // 선택한 여행방의 상세 페이지로 이동
-    // 예: /trip/123
-    navigate(`/trip/${selectedTrip.id}`)
+      if (!inviteToken) {
+        alert('초대 토큰을 찾을 수 없습니다')
+        return
+      }
+
+      const response = await enterInviteLink(inviteToken, {
+        name: trimmedName,
+        password: trimmedPassword,
+      })
+
+      console.log('enterInviteLink 전체 응답:', response)
+      console.log('enterInviteLink data:', response.data)
+
+      const enteredMember = response.data
+
+      if (!response.success || !enteredMember) {
+        alert(response.message || '방 입장에 실패했습니다')
+        return
+      }
+
+      // 여기서부터는 응답으로 받은 "진짜 roomId" 사용
+      const realRoomId = enteredMember.roomId
+      const oldRoomId = selectedTrip.id
+
+      const activeMember = {
+        memberId: enteredMember.memberId,
+        name: enteredMember.name,
+        role: enteredMember.role,
+      }
+
+      // 1) 진짜 roomId 기준으로 멤버/현재방 저장
+      saveMemberForRoom(realRoomId, activeMember)
+      setActiveMemberForRoom(realRoomId, activeMember)
+      setCurrentRoomId(realRoomId)
+      saveCurrentUserSession(realRoomId, activeMember)
+
+      // 2) 기존 roomId가 realRoomId와 다르면 tripRoomIds 치환
+      if (oldRoomId && oldRoomId !== realRoomId) {
+        removeTripRoomId(oldRoomId)
+      }
+      addTripRoomId(realRoomId)
+
+      // 3) inviteToken도 realRoomId 기준으로 다시 저장
+      if (inviteToken) {
+        saveInviteTokenForRoom(realRoomId, inviteToken)
+
+        if (oldRoomId && oldRoomId !== realRoomId) {
+          removeInviteTokenForRoom(oldRoomId)
+        }
+      }
+
+      // 5) myTrips state도 realRoomId 기준으로 교체
+      setMyTrips((prev) => {
+        const next = prev.map((trip) =>
+          trip.id === oldRoomId
+            ? {
+              ...trip,
+              id: realRoomId,
+              inviteToken,
+            }
+            : trip
+        )
+
+        const alreadyExists = next.some((trip) => trip.id === realRoomId)
+        return alreadyExists
+          ? next.filter(
+            (trip, index, arr) =>
+              arr.findIndex((item) => item.id === trip.id) === index
+          )
+          : [
+            {
+              id: realRoomId,
+              name: selectedTrip.name,
+              startDate: selectedTrip.startDate,
+              endDate: selectedTrip.endDate,
+              inviteToken,
+            },
+            ...next,
+          ]
+      })
+
+      sessionStorage.removeItem('pendingInviteToken')
+
+      localStorage.setItem('homeActiveTab', 'myTrips')
+
+      setIsModalOpen(false)
+      setSelectedTrip(null)
+      setName('')
+      setPassword('')
+      navigate(`/trip/${realRoomId}`)
+    } catch (error) {
+      console.error('방 입장 실패:', error)
+
+      const message =
+        error?.response?.data?.message || '방 입장에 실패했습니다.'
+
+      alert(message)
+
+      if (error?.response?.status === 404 && selectedTrip?.id) {
+        removeTripRoomId(selectedTrip.id);
+        setMyTrips((prev) => prev.filter((trip) => trip.id !== selectedTrip.id));
+      }
+    }
   }
+
 
   return (
     <div className="app-container">
-      {/* 상단 공통 헤더 */}
       <Header />
 
-      {/* 홈 탭 컴포넌트
-          activeTab: 현재 어떤 탭이 선택되어 있는지 전달
-          onChangeTab: 탭 바꾸는 함수 전달 */}
       <HomeTab
         activeTab={activeTab}
         onChangeTab={setActiveTab}
       />
 
-      {/* 현재 탭이 create일 때만 여행방 생성 폼 표시 */}
       {activeTab === 'create' && (
         <CreateRoomForm onCreateRoom={handleCreateRoom} />
       )}
 
-      {/* 현재 탭이 myTrips일 때만 여행방 목록 표시 */}
       {activeTab === 'myTrips' && (
         <section className="my-trip-list">
-          {/* 여행방이 하나도 없으면 안내 문구 출력 */}
-          {rooms.length === 0 ? (
-            <p className="empty-message">아직 생성된 여행방이 없습니다</p>
+          {isTripsLoading ? (
+            <p className="empty-message">불러오는 중...</p>
+          ) : myTrips.length === 0 ? (
+            <p className="empty-message">아직 내 여행방이 없습니다</p>
           ) : (
-            // 여행방이 있으면 배열을 순회하면서 카드 렌더링
-            rooms.map((trip) => (
+            myTrips.map((trip) => (
               <MyTripBox
-                key={trip.id} // React가 각 요소를 구분하기 위한 고유 key
-                trip={trip} // 여행방 데이터 전달
-                onClick={handleTripClick} // 카드 클릭 시 실행할 함수
-                onDelete={handleDeleteRoom} // 삭제 버튼 클릭 시 실행할 함수
+                key={trip.id}
+                trip={trip}
+                onClick={handleTripClick}
+                onDelete={handleDeleteRoom}
               />
             ))
           )}
         </section>
       )}
 
-      {/* 하단 기능 소개 카드 영역 - 서비스 소개 */}
       <section className="feature-card-list">
         <FeatureCard
           icon={<FiCalendar size={22} />}
@@ -181,14 +409,14 @@ function HomePage() {
         />
       </section>
 
-      {/* 모달이 열려 있을 때만 NameModal 표시 */}
       {isModalOpen && (
         <NameModal
-          name={name} // 현재 이름 값
-          setName={setName} // 이름 변경 함수
-          password={password} // 현재 비밀번호 값
-          setPassword={setPassword} // 비밀번호 변경 함수
-          onStart={handleStart} // 시작 버튼 클릭 시 실행할 함수
+          name={name}
+          setName={setName}
+          password={password}
+          setPassword={setPassword}
+          onStart={handleStart}
+          onClose={handleCloseModal}
         />
       )}
     </div>

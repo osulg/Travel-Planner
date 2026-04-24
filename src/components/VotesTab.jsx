@@ -3,14 +3,142 @@ import VoteModal from "./VoteModal";
 import VoteCard from "./VoteCard";
 import "../styles/vote.css";
 
+import {
+    createVote,
+    getVotes,
+    respondVote,
+    closeVote,
+    deleteVote
+} from "../api/voteApi";
+
 // 투표 탭 전체 컴포넌트
 function VotesTab({
+    roomId,
     places,     // 현재 장소 목록
     votes,      // 투표 배열
-    setVotes    // 투표 상태 변경 함수 (부모한테 받음)
+    setVotes,    // 투표 상태 변경 함수 (부모한테 받음)
+    currentUserName
+
 }) {
     // "새 투표 추가" 모달이 열렸는지 여부
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const mapVoteFromServer = (vote) => {
+        console.log("vote 작성자 관련 원본:", {
+            createdBy: vote.createdBy,
+            authorName: vote.authorName,
+            creatorName: vote.creatorName,
+            writerName: vote.writerName,
+            memberName: vote.memberName,
+            userName: vote.userName,
+        });
+
+        const createdRaw =
+            vote.createdAt ??
+            vote.createdDate ??
+            vote.createdDateTime ??
+            vote.createAt ??
+            "";
+
+        const formattedCreatedAt = createdRaw
+            ? new Date(createdRaw).toLocaleString("ko-KR")
+            : "";
+
+        return {
+            id: vote.voteId ?? vote.id,
+            title: vote.title ?? "",
+            authorName:
+                vote.createdBy ??
+                vote.authorName ??
+                vote.creatorName ??
+                vote.writerName ??
+                vote.memberName ??
+                vote.userName ??
+                "알 수 없음",
+            createdAt: formattedCreatedAt,
+            deadline: vote.deadline ?? "",
+            status: vote.status === "CLOSED" ? "closed" : "open",
+            myVoteOptionId: vote.myVoteOptionId ?? null,
+            participantCount: vote.participantCount ?? 0,
+            memberCount: vote.memberCount ?? 0,
+            options: (vote.options ?? []).map((option) => {
+                const rawPlaceId = option.placeId ?? option.label?.placeId ?? null;
+                const matchedPlace = places.find(
+                    (place) => String(place.id) === String(rawPlaceId)
+                );
+
+                return {
+                    id: option.voteOptionId ?? option.id ?? rawPlaceId,
+                    placeId: rawPlaceId,
+                    text:
+                        typeof option.optionText === "string" && option.optionText.trim() !== ""
+                            ? option.optionText
+                            : typeof option.label === "string" && option.label.trim() !== ""
+                                ? option.label
+                                : matchedPlace?.title ?? "선택지 이름 없음",
+                    link:
+                        typeof option.linkUrl === "string" && option.linkUrl.trim() !== ""
+                            ? option.linkUrl
+                            : typeof option.link === "string" && option.link.trim() !== ""
+                                ? option.link
+                                : matchedPlace?.sourceUrl ?? "",
+                    votes: Number(option.voteCount ?? option.votes ?? 0),
+                    voteRate: Number(option.voteRate ?? 0),
+                };
+            }),
+        };
+    };
+
+    const mapCreatedVote = (voteData, currentUserName) => {
+        return {
+            id: voteData.voteId,
+            title: voteData.title ?? "",
+            authorName:
+                voteData.createdBy ??
+                voteData.authorName ??
+                currentUserName ??
+                "알 수 없음",
+            createdAt:
+                voteData.createdAt ??
+                voteData.createdDate ??
+                voteData.createdDateTime ??
+                new Date().toISOString(),
+            deadline: voteData.deadline ?? "",
+            status: voteData.status === "CLOSED" ? "closed" : "open",
+            myVoteOptionId: null,
+            participantCount: 0,
+            memberCount: 0,
+            options: (voteData.options ?? []).map((option) => ({
+                id: option.voteOptionId,
+                placeId: option.placeId,
+                text: option.optionText ?? option.label ?? "",
+                link: option.linkUrl ?? option.link ?? "",
+                votes: option.voteCount ?? 0,
+                voteRate: option.voteRate ?? 0,
+            })),
+        };
+    };
+
+    const refreshVotes = async () => {
+        if (!roomId) return;
+
+        try {
+            const result = await getVotes(roomId);
+
+            console.log("투표 목록 조회 응답:", result);
+
+            if (!result.success) {
+                alert(result.message || "투표 목록 조회에 실패했습니다.");
+                return;
+            }
+
+            const mappedVotes = (result.data?.votes ?? []).map(mapVoteFromServer);
+            setVotes(mappedVotes);
+        } catch (error) {
+            console.error("투표 목록 조회 실패:", error);
+            alert("투표 목록 조회 중 오류가 발생했습니다.");
+        }
+    };
 
     // 모달 열기
     const handleOpenModal = () => {
@@ -24,116 +152,167 @@ function VotesTab({
 
     // 새 투표 생성
     // 새 투표를 배열 맨 앞에 추가하고 모달 닫기
-    const handleCreateVote = (newVote) => {
-        setVotes((prev) => [newVote, ...prev]);
-        setIsModalOpen(false);
+    const handleCreateVote = async (payload) => {
+        if (!roomId) {
+            alert("방 ID를 찾을 수 없습니다.");
+            return;
+        }
+
+        try {
+            const result = await createVote(roomId, payload);
+
+            console.log("투표 생성 응답:", result);
+
+            if (!result.success) {
+                alert(result.message || "투표 생성에 실패했습니다.");
+                return;
+            }
+
+            // const refreshed = await getVotes(roomId);
+
+            // console.log("투표 목록 재조회 응답:", refreshed);
+
+            // if (!refreshed.success) {
+            //     alert(refreshed.message || "투표 목록 재조회에 실패했습니다.");
+            //     return;
+            // }
+
+            // const mappedVotes = (refreshed.data?.votes ?? []).map(mapVoteFromServer);
+            // setVotes(mappedVotes);
+            // setIsModalOpen(false);
+
+            await refreshVotes();
+            setIsModalOpen(false);
+
+            alert(result.message || "투표가 생성되었습니다.");
+        } catch (error) {
+            console.error("투표 생성 실패:", error);
+            alert(error?.response?.data?.message || "투표 생성 중 오류가 발생했습니다.");
+        }
     };
 
     // 투표 삭제
-    const handleDeleteVote = (voteId) => {
-        setVotes((prev) => prev.filter((vote) => vote.id !== voteId));
+    const handleDeleteVote = async (voteId) => {
+        const targetVote = votes.find((vote) => vote.id === voteId);
+        if (!targetVote) return;
+
+        const confirmed = window.confirm("이 투표를 삭제하시겠습니까?");
+        if (!confirmed) return;
+
+        try {
+            const result = await deleteVote(roomId, voteId);
+
+            console.log("투표 삭제 응답:", result);
+
+            if (!result.success) {
+                alert(result.message || "투표 삭제에 실패했습니다.");
+                return;
+            }
+
+            // setVotes((prev) => prev.filter((vote) => vote.id !== voteId));
+
+            await refreshVotes();
+
+            alert(result.message || "투표가 삭제되었습니다.");
+        } catch (error) {
+            console.error("투표 삭제 실패:", error);
+            alert("투표 삭제 중 오류가 발생했습니다.");
+        }
     };
 
     // 투표 마감
-    const handleCloseVote = (voteId) => {
-        setVotes((prev) =>
-            prev.map((vote) =>
-                vote.id === voteId ? { ...vote, status: "closed" } : vote
-            )
-        );
+    const handleCloseVote = async (voteId) => {
+        const targetVote = votes.find((vote) => vote.id === voteId);
+        if (!targetVote) return;
+
+        if (targetVote.status === "closed") {
+            alert("이미 마감된 투표입니다.");
+            return;
+        }
+
+        try {
+            const result = await closeVote(roomId, voteId);
+
+            console.log("투표 마감 응답:", result);
+
+            if (!result.success) {
+                alert(result.message || "투표 마감에 실패했습니다.");
+                return;
+            }
+
+            // setVotes((prev) =>
+            //     prev.map((vote) =>
+            //         vote.id === voteId
+            //             ? {
+            //                 ...vote,
+            //                 status:
+            //                     result?.data?.status === "CLOSED" || result?.data?.status === "closed"
+            //                         ? "closed"
+            //                         : "open",
+            //             }
+            //             : vote
+            //     )
+            // );
+
+            await refreshVotes();
+
+            alert(result.message || "투표가 마감되었습니다.");
+        } catch (error) {
+            console.error("투표 마감 실패:", error);
+            alert("투표 마감 중 오류가 발생했습니다.");
+        }
     };
 
     // 특정 선택지에 투표 / 투표 취소 / 표 이동 처리
-    const handleVoteOption = (voteId, optionId) => {
-        setVotes((prev) =>
-            prev.map((vote) => {
-                // 다른 투표이거나 마감된 투표면 그대로 반환
-                if (vote.id !== voteId || vote.status === "closed") return vote;
+    const handleVoteOption = async (voteId, optionId) => {
+        if (!roomId) {
+            alert("방 ID를 찾을 수 없습니다.");
+            return;
+        }
 
-                // 이전에 내가 투표했던 선택지 id
-                const previousOptionId = vote.userVote;
+        if (!voteId || !optionId) {
+            console.error("잘못된 투표 요청:", { voteId, optionId });
+            alert("선택지 정보가 올바르지 않습니다.");
+            return;
+        }
 
-                // 같은 선택지를 다시 누르면 투표 취소
-                if (previousOptionId === optionId) {
-                    return {
-                        ...vote,
-                        userVote: null, // 내 선택 해제
+        const targetVote = votes.find((vote) => vote.id === voteId);
+        if (!targetVote) return;
 
-                        // 해당 선택지 표 -1
-                        options: vote.options.map((option) =>
-                            option.id === optionId
-                                ? { ...option, votes: Math.max(0, option.votes - 1) }
-                                : option
-                        ),
-                    };
-                }
+        if (targetVote.status === "closed") {
+            alert("마감된 투표에는 참여할 수 없습니다.");
+            return;
+        }
 
-                // 다른 선택지를 누른 경우
-                // 이전 선택지는 -1, 새 선택지는 +1
-                const updatedOptions = vote.options.map((option) => {
-                    // 예전에 골랐던 선택지 표 감소
-                    if (previousOptionId && option.id === previousOptionId) {
-                        return {
-                            ...option,
-                            votes: Math.max(0, option.votes - 1),
-                        };
-                    }
+        try {
+            const result = await respondVote(roomId, voteId, optionId);
 
-                    // 새로 고른 선택지 표 증가
-                    if (option.id === optionId) {
-                        return {
-                            ...option,
-                            votes: option.votes + 1,
-                        };
-                    }
+            console.log("투표 참여/변경 응답:", result);
 
-                    // 관련 없는 선택지는 그대로
-                    return option;
-                });
+            if (!result.success) {
+                alert(result.message || "투표 반영에 실패했습니다.");
+                return;
+            }
 
-                return {
-                    ...vote,
-                    userVote: optionId, // 현재 내가 고른 선택지 저장
-                    options: updatedOptions,
-                };
-            })
-        );
+            await refreshVotes();
+        } catch (error) {
+            console.error("투표 참여/변경 실패:", error);
+            alert(error?.response?.data?.message || "투표 반영 중 오류가 발생했습니다.");
+        }
     };
 
-    // 마감시간이 지난 투표를 자동으로 마감 처리하는 effect
     useEffect(() => {
-        // 1초마다 한 번씩 검사
-        const interval = setInterval(() => {
-            const now = new Date();
+        if (!roomId) return;
 
-            setVotes((prev) =>
-                prev.map((vote) => {
-                    // 이미 마감된 투표는 그대로
-                    if (vote.status === "closed") return vote;
+        refreshVotes();
 
-                    // 마감시간이 없는 투표는 그대로
-                    if (!vote.deadline)
-                        return vote;
+        const intervalId = setInterval(() => {
+            refreshVotes();
+        }, 5000);
 
-                    // 마감시간을 Date 객체로 변환
-                    const deadlineDate = new Date(vote.deadline);
+        return () => clearInterval(intervalId);
+    }, [roomId]);
 
-                    // 현재 시간이 마감시간 이상이면 자동 마감
-                    if (now >= deadlineDate) {
-                        return {
-                            ...vote,
-                            status: "closed",
-                        };
-                    }
-
-                    return vote;
-                })
-            );
-        }, 1000);
-
-        // 컴포넌트가 사라질 때 interval 정리
-        return () => clearInterval(interval);
-    }, [setVotes]);
 
     return (
         // 투표 탭 전체 영역
@@ -158,6 +337,7 @@ function VotesTab({
                             onVote={handleVoteOption}
                             onDelete={handleDeleteVote}
                             onClose={handleCloseVote}
+                            currentUserName={currentUserName}
                         />
                     ))}
                 </div>
@@ -169,6 +349,7 @@ function VotesTab({
                     onClose={handleCloseModal}
                     onCreate={handleCreateVote}
                     places={places}
+                    currentUserName={currentUserName}
                 />
             )}
         </section>

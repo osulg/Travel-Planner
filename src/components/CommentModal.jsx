@@ -1,27 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/comment-modal.css";
 
 // 댓글 모달 컴포넌트
-function CommentModal({ place, onClose, onAddComment, onDeleteComment }) {
+function CommentModal({ place, onClose, onAddComment }) {
     // 현재 입력창 값
     const [input, setInput] = useState("");
 
-    // place.comments가 배열이면 그대로 사용
-    // 아니면 빈 배열로 처리
-    const comments = Array.isArray(place.comments) ? place.comments : [];
+    const [comments, setComments] = useState(
+        Array.isArray(place.comments) ? place.comments : []
+    );
+
+    useEffect(() => {
+        setComments(Array.isArray(place.comments) ? place.comments : []);
+    }, [place.comments]);
 
     /* func: 댓글 작성 제출 함수 */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 공백만 입력한 경우는 무시
-        if (!input.trim())
-            return;
+        if (!input.trim()) return;
 
-        // 공백만 입력한 경우는 무시
-        onAddComment(place.id, input.trim());
+        const newComment = await onAddComment(place.id, input.trim());
 
-        // 입력창 초기화
+        if (newComment) {
+            setComments((prev) => [...prev, newComment]);
+        }
+
         setInput("");
     };
 
@@ -60,21 +64,21 @@ function CommentModal({ place, onClose, onAddComment, onDeleteComment }) {
                             <p className="comment-empty">아직 댓글이 없습니다.</p>
                         ) : (
                             // 댓글이 있을 때 목록 렌더링
-                            comments.map((comment) => (
-                                <div key={comment.id} className="comment-item">
+                            comments.map((comment, index) => (
+                                <div key={`${comment.id}-${comment.createdAt}-${index}`} className="comment-item">
                                     {/* 상단: 작성자 + 삭제 버튼 */}
                                     {/* 작성자 */}
                                     <div className="comment-item-top">
                                         <strong>{comment.author}</strong>
 
-                                        {/* 댓글 삭제 */}
+                                        {/* 댓글 삭제
                                         <button
                                             type="button"
                                             className="comment-delete-btn"
                                             onClick={() => onDeleteComment(place.id, comment.id)}
                                         >
                                             ×
-                                        </button>
+                                        </button> */}
                                     </div>
 
                                     {/* 댓글 본문 */}

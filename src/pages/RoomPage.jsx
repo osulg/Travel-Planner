@@ -5,6 +5,10 @@ import VotesTab from '../components/VotesTab'
 import SettingsTab from '../components/SettingsTab'
 import '../styles/trip-create.css'
 
+import { getRoomSummary, getRoomSettings } from '../api/roomApi'
+import { addTripRoomId, saveInviteTokenForRoom, getActiveMemberForRoom } from '../utils/storage'
+
+
 /* 
  * 1) 방 id 읽음 
  * 2) localStorage에서 해당 방 찾기
@@ -23,6 +27,16 @@ function RoomPage() {
     // URL 파라미터에서 roomId 값을 가져옴
     // 예: /trip/123 이면 roomId는 "123"
     const { roomId } = useParams()
+
+    const activeMember = getActiveMemberForRoom(roomId)
+
+    const currentUserName =
+        activeMember?.name || activeMember?.memberName || ''
+
+    useEffect(() => {
+        if (!roomId) return
+        addTripRoomId(roomId)
+    }, [roomId])
 
     // 페이지 이동 함수
     // 뒤로 가기 버튼 등에 사용
@@ -48,71 +62,84 @@ function RoomPage() {
     // 그 항목과 연결된 장소 카드를 강조하고 싶을 때 사용
     const [highlightedPlaceId, setHighlightedPlaceId] = useState(null);
 
+    const [settingsData, setSettingsData] = useState(null)
+
     // roomId가 바뀔 때 실행되는 effect
     // 즉, 다른 여행방 페이지로 들어가면 다시 해당 방 정보를 불러옴
     useEffect(() => {
-        // 데이터 불러오기 시작
-        setIsLoading(true)
+        const fetchRoomSummary = async () => {
+            if (!roomId) return
 
-        // localStorage에 저장된 rooms 배열을 가져옴
-        // 없으면 빈 배열 사용
-        const savedRooms = JSON.parse(localStorage.getItem('rooms')) || []
+            setIsLoading(true)
 
-        // 현재 URL의 roomId와 일치하는 여행방 찾기
-        const foundRoom = savedRooms.find(
-            (room) => String(room.id) === String(roomId)
-        )
+            try {
+                const response = await getRoomSummary(roomId)
+                const summary = response.data
 
-        // 해당 여행방을 찾은 경우
-        if (foundRoom) {
-            // places 안의 각 장소 데이터를 한 번 정리(normalize)
-            // title이 없고 name만 있을 수도 있으니
-            // title이 비어 있으면 name 값을 대신 넣어줌
-            const normalizedPlaces = (foundRoom.places || []).map((place) => ({
-                ...place,
-                title: place.title || place.name || '',
-            }))
+                if (!response.success || !summary) {
+                    setRoomData(null)
+                    return
+                }
 
-            setRoomData(foundRoom) // 방 기본 정보 저장
-            setPlaces(normalizedPlaces) // 정리된 장소 목록 저장
-            setVotes(foundRoom.votes || []) // 저장된 투표 목록 불러오기
-            setScheduledItems(foundRoom.scheduledItems || []) //저장된 일정 항목 불러오기
+                setRoomData((prev) => ({
+                    ...(prev || {}),
+                    id: summary.roomId,
+                    name: summary.name,
+                    startDate: summary.startDate,
+                    endDate: summary.endDate,
+                }))
+            } catch (error) {
+                console.error('방 요약 조회 실패:', error)
+                setRoomData(null)
+            } finally {
+                setIsLoading(false)
+            }
         }
 
-        // 데이터 불러오기 종료
-        setIsLoading(false)
+        fetchRoomSummary()
     }, [roomId])
 
-    // roomData, places, votes, scheduledItems 값이 바뀔 때마다
-    // 현재 방 데이터를 localStorage에 다시 저장하는 effect
+    const refreshRoomSettings = async () => {
+        if (!roomId) return;
+
+        try {
+            const response = await getRoomSettings(roomId);
+
+            console.log('getRoomSettings 전체 응답:', response);
+            console.log('settings response.data:', response.data);
+
+            const settings = response.data;
+
+            console.log('settings data:', settings);
+
+            if (!response.success || !settings) {
+                setSettingsData(null);
+                return;
+            }
+
+            setSettingsData(settings);
+
+            if (settings.invite?.token) {
+                saveInviteTokenForRoom(roomId, settings.invite.token);
+                console.log('저장된 invite token:', settings.invite.token);
+            }
+        } catch (error) {
+            console.error('설정 조회 실패:', error);
+            setSettingsData(null);
+        }
+    };
+
     useEffect(() => {
-        // roomData가 아직 없으면 저장하지 않음
-        if (!roomData) return
+        if (!roomId) return;
 
-        // 기존 여행방 목록 불러오기
-        const savedRooms = JSON.parse(localStorage.getItem('rooms')) || []
+        refreshRoomSettings();
 
-        // 현재 roomId에 해당하는 방만 새 데이터로 교체
-        const updatedRooms = savedRooms.map((room) =>
-            String(room.id) === String(roomId)
-                ? {
-                    // 기존 room 정보 유지
-                    ...room,
+        const intervalId = setInterval(() => {
+            refreshRoomSettings();
+        }, 5000);
 
-                    // roomData에 들어 있는 최신 정보 반영
-                    ...roomData,
-
-                    // 장소, 투표, 일정표 상태값도 같이 반영
-                    places,
-                    votes,
-                    scheduledItems,
-                }
-                : room
-        )
-
-        // 업데이트된 전체 rooms 배열을 다시 저장
-        localStorage.setItem('rooms', JSON.stringify(updatedRooms))
-    }, [roomId, roomData, places, votes, scheduledItems])
+        return () => clearInterval(intervalId);
+    }, [roomId]);
 
     /* func: 일정표 항목을 클릭했을 때 실행되는 함수 */
     const handleScheduleItemClick = (item) => {
@@ -121,71 +148,10 @@ function RoomPage() {
 
         // 클릭한 일정 항목과 연결된 장소를 강조 표시하도록 id 저장
         if (!item.placeId) return;
-        setHighlightedPlaceId(item.placeId);
-    }
 
-    /* func: 현재 activeTab 값에 따라 어떤 컴포넌트를 보여줄지 결정하는 함수 */
-    const renderTabContent = () => {
-        switch (activeTab) {
-            // 일정 플래너 탭
-            case 'planner':
-                return (
-                    <PlannerTab
-                        // 장소 목록 전달
-                        places={places}
-
-                        // 장소 수정 함수 전달
-                        setPlaces={setPlaces}
-
-                        // 일정 항목 목록 전달
-                        scheduledItems={scheduledItems}
-
-                        // 일정 항목 수정 함수 전달
-                        setScheduledItems={setScheduledItems}
-
-                        // 방 기본 정보 전달
-                        roomData={roomData}
-
-                        // 현재 강조 중인 장소 id 전달
-                        highlightedPlaceId={highlightedPlaceId}
-
-                        // 일정표 항목 클릭 시 실행할 함수 전달
-                        onScheduleItemClick={handleScheduleItemClick}
-                    />
-                )
-
-            // 투표 탭
-            case 'votes':
-                return (
-                    <VotesTab
-                        // 장소 목록 전달
-                        // 투표에서 장소 리스트를 활용할 수 있음
-                        places={places}
-
-                        // 투표 목록 전달
-                        votes={votes}
-
-                        // 투표 수정 함수 전달
-                        setVotes={setVotes}
-                    />
-                )
-
-            // 설정 탭
-            case 'settings':
-                return (
-                    <SettingsTab
-                        // 방 정보 전달
-                        roomData={roomData}
-
-                        // 방 정보 수정 함수 전달
-                        setRoomData={setRoomData}
-                    />
-                )
-
-            // 정의되지 않은 탭
-            default:
-                return null
-        }
+        setHighlightedPlaceId((prev) =>
+            prev === item.placeId ? null : item.placeId
+        );
     }
 
     // 아직 데이터를 불러오는 중이면 로딩 문구 출력
@@ -243,7 +209,37 @@ function RoomPage() {
             </nav>
 
             {/* 현재 탭에 맞는 내용 표시 */}
-            <main className="room-content">{renderTabContent()}</main>
+            <main className="room-content">
+                <div style={{ display: activeTab === 'planner' ? 'block' : 'none' }}>
+                    <PlannerTab
+                        roomId={roomId}
+                        places={places}
+                        setPlaces={setPlaces}
+                        scheduledItems={scheduledItems}
+                        setScheduledItems={setScheduledItems}
+                        highlightedPlaceId={highlightedPlaceId}
+                        onScheduleItemClick={handleScheduleItemClick}
+                        currentUserName={currentUserName}
+                    />
+                </div>
+
+                <div style={{ display: activeTab === 'votes' ? 'block' : 'none' }}>
+                    <VotesTab
+                        roomId={roomId}
+                        places={places}
+                        votes={votes}
+                        setVotes={setVotes}
+                        currentUserName={currentUserName}
+                    />
+                </div>
+
+                <div style={{ display: activeTab === 'settings' ? 'block' : 'none' }}>
+                    <SettingsTab
+                        roomData={roomData}
+                        settingsData={settingsData}
+                    />
+                </div>
+            </main>
         </div>
     )
 }

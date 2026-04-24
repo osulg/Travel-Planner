@@ -19,7 +19,12 @@ function PlaceCard({
     // 댓글 개수 계산
     // comments가 배열이면 길이 반환
     // 없으면 0개 처리
-    const commentCount = Array.isArray(place.comments) ? place.comments.length : 0;
+    const commentCount =
+        typeof place.commentCount === "number"
+            ? place.commentCount
+            : Array.isArray(place.comments)
+                ? place.comments.length
+                : 0;
 
     return (
         // 장소 카드 전체 박스
@@ -66,6 +71,8 @@ function PlaceCard({
                 </div>
             </div>
 
+            {/* {console.log("place card sourceUrl:", place.sourceUrl)} */}
+
             {/* 링크 표시 영역 */}
             <div className="place-link-box">
                 <span className="link-label">링크</span>
@@ -94,7 +101,7 @@ function PlaceCard({
             <div className="place-action-row">
                 {/* 좋아요 버튼 */}
                 <button
-                    className={`action-btn small ${place.userReaction === "like" ? "active" : ""}`}
+                    className={`action-btn small ${place.userReaction === "LIKE" ? "active" : ""}`}
                     onClick={onLike}
                     disabled={isLocked}
                 >
@@ -104,7 +111,7 @@ function PlaceCard({
 
                 {/* 싫어요 버튼 */}
                 <button
-                    className={`action-btn small ${place.userReaction === "dislike" ? "active" : ""}`}
+                    className={`action-btn small ${place.userReaction === "DISLIKE" ? "active" : ""}`}
                     onClick={onDislike}
                     disabled={isLocked}
                 >

@@ -5,7 +5,7 @@ import "../styles/vote-modal.css";
 function VoteModal({
     onClose,    // 모달 닫기
     onCreate,   // 새 투표 생성 완료 시 부모로 전달
-    places      // 현재 장소 목록 (투표 선택지)
+    places,      // 현재 장소 목록 (투표 선택지)
 }) {
     // 투표 제목 입력값
     const [title, setTitle] = useState("");
@@ -48,61 +48,44 @@ function VoteModal({
 
     // 폼 제출
     const handleSubmit = (e) => {
-        e.preventDefault(); // form 기본 새로고침 방지
+        e.preventDefault();
 
-        // 제목이 비어 있으면 막기
-        if (!title.trim()) {
+        const trimmedTitle = title.trim();
+
+        if (!trimmedTitle) {
             alert("투표 제목을 입력해주세요.");
             return;
         }
 
-        // 현재 선택된 placeId만 모으기
-        // 빈값("")은 제거
+        if (!deadline) {
+            alert("마감시간을 선택해주세요.");
+            return;
+        }
+
         const selectedPlaceIds = options
             .map((option) => option.placeId)
             .filter(Boolean);
 
-        // 선택지는 최소 2개 필요
         if (selectedPlaceIds.length < 2) {
             alert("선택지는 최소 2개 필요합니다.");
             return;
         }
 
-        // 중복 장소 선택 방지
         const uniqueIds = new Set(selectedPlaceIds);
         if (uniqueIds.size !== selectedPlaceIds.length) {
             alert("같은 장소를 중복 선택할 수 없습니다.");
             return;
         }
 
-        // 선택된 placeId를 실제 places 배열의 장소 객체와 매칭
-        const selectedPlaces = selectedPlaceIds
-            .map((placeId) =>
-                places.find((place) => String(place.id) === String(placeId))
-            )
-            .filter(Boolean);
-
-        // 새 투표 객체 생성
-        const newVote = {
-            id: Date.now(), // 프론트 임시 id
-            title, // 투표 제목
-            authorName: localStorage.getItem("userName") || "홍길동", // 작성자
-            createdAt: new Date().toLocaleDateString("ko-KR"), // 작성일
-            deadline, // 마감시간
-            status: "open", // 초기 상태는 진행중
-            userVote: null, // 아직 내가 고른 선택지 없음
-
-            // 각 선택지를 실제 투표 option 형태로 변환
-            options: selectedPlaces.map((place) => ({
-                id: place.id,          // 선택지 id
-                text: place.title,     // 선택지 이름
-                link: place.sourceUrl, // 선택지 링크
-                votes: 0,              // 초기 득표수 0
+        const payload = {
+            title: trimmedTitle,
+            deadline,
+            options: selectedPlaceIds.map((placeId) => ({
+                placeId,
             })),
         };
 
-        // 부모에 새 투표 전달
-        onCreate(newVote);
+        onCreate(payload);
     };
 
     return (
@@ -134,6 +117,7 @@ function VoteModal({
                         placeholder="어디로 갈까요?"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
+                        required
                     />
 
                     {/* 선택지 목록 */}
@@ -184,12 +168,13 @@ function VoteModal({
                     </button>
 
                     {/* 마감시간 입력 */}
-                    <label className="vote-label">마감시간 (선택)</label>
+                    <label className="vote-label">마감시간 *</label>
                     <input
                         className="vote-input"
                         type="datetime-local"
                         value={deadline}
                         onChange={(e) => setDeadline(e.target.value)}
+                        required
                     />
 
                     {/* 제출 버튼 */}

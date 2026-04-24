@@ -3,6 +3,8 @@ import InputField from './InputField'
 import PrimaryButton from './PrimaryButton'
 import InlineDatePlanner from './InlineDatePlanner'
 
+import { createRoom } from '../api/roomApi'
+
 /* 
  * 1) 사용자 여행 이름 입력 
  * 2) 사용자 여행 날짜 선택
@@ -24,6 +26,9 @@ function CreateRoomForm({ onCreateRoom }) {
 
     // 여행 종료일 state
     const [endDate, setEndDate] = useState(null)
+
+
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     /* func: 날짜 선택 컴포넌트에서 날짜가 바뀌었을 때 실행되는 함수 */
     const handleDateChange = (update) => {
@@ -57,66 +62,58 @@ function CreateRoomForm({ onCreateRoom }) {
     }
 
     /* func: 방 만들기 버튼 클릭 시 실행되는 함수 */
-    const handleCreateRoom = () => {
-        // 여행 이름이 비어 있으면 경고창 띄우고 종료
+    // api : createRoom
+    const handleCreateRoom = async () => {
         if (roomName.trim() === '') {
             alert('여행 이름을 입력해주세요')
             return
         }
 
-        // 시작일 또는 종료일이 없으면 경고창 띄우고 종료
         if (!startDate || !endDate) {
             alert('여행 기간을 선택해주세요')
             return
         }
 
-        // 새 여행방 객체 생성
-        const newRoom = {
-            // 방 자체의 고유 id 생성
-            id: crypto.randomUUID(),
+        try {
+            setIsSubmitting(true)
 
-            // 사용자가 입력한 여행 이름
-            name: roomName,
+            const payload = {
+                name: roomName.trim(),
+                startDate: formatDateToString(startDate),
+                endDate: formatDateToString(endDate),
+            };
 
-            // 시작일을 문자열로 변환해서 저장
-            startDate: formatDateToString(startDate),
+            console.log("방 생성 요청 payload:", payload);
 
-            // 종료일을 문자열로 변환해서 저장
-            endDate: formatDateToString(endDate),
+            const response = await createRoom({
+                name: roomName.trim(),
+                startDate: formatDateToString(startDate),
+                endDate: formatDateToString(endDate),
+            })
 
-            // 생성 시각 저장
-            // 날짜/시간을 한국 형식 문자열로 바꿈
-            createdAt: new Date().toLocaleString('ko-KR'),
+            console.log('방 생성 응답:', response)
 
-            // 초대 링크 생성
-            // 현재 사이트 주소 + /trip/ + 새 uuid 형태
-            inviteLink: `${window.location.origin}/trip/${crypto.randomUUID()}`,
+            if (!response.success || !response.data) {
+                throw new Error(response.message || '방 생성 응답 데이터가 없습니다.')
+            }
 
-            // 처음에는 장소 목록이 없으므로 빈 배열
-            places: [],
+            const createdRoom = response.data
 
-            // 처음에는 투표 목록이 없으므로 빈 배열
-            votes: [],
+            if (!createdRoom) {
+                throw new Error('방 생성 응답 데이터가 없습니다.')
+            }
 
-            // 처음 생성 시 기본 참여자 1명 추가
-            // userName이 localStorage에 있으면 그 이름 사용
-            // 없으면 기본값 '홍길동'
-            members: [
-                {
-                    id: 1,
-                    name: localStorage.getItem('userName') || '홍길동',
-                    joinedAt: new Date().toISOString(),
-                },
-            ],
+            onCreateRoom(createdRoom)
+
+            setRoomName('')
+            setStartDate(null)
+            setEndDate(null)
+        } catch (error) {
+            console.error('방 생성 실패:', error)
+            alert(error.message || '방 생성에 실패했습니다.')
+        } finally {
+            setIsSubmitting(false)
         }
-
-        // 부모 컴포넌트(HomePage)에게 새 방 데이터를 전달
-        onCreateRoom(newRoom)
-
-        // 생성 후 입력값 초기화
-        setRoomName('')
-        setStartDate(null)
-        setEndDate(null)
     }
 
     return (
@@ -148,6 +145,7 @@ function CreateRoomForm({ onCreateRoom }) {
             <PrimaryButton
                 text="방 만들기"
                 onClick={handleCreateRoom}
+                disabled={isSubmitting}
             />
         </section>
     )

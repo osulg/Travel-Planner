@@ -167,3 +167,23 @@
 .info-row strong {
   font-weight: 300;
 }
+
+.member-name {
+  font-size: 18px;
+  font-weight: 500;
+  color: #222;
+}
+
+.host-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
